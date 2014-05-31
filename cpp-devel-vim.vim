@@ -43,31 +43,8 @@
 set suffixes+=.lo,.o,.moc,.la,.closure,.loT
 
 " Search for headers here
-"" set path=.,/usr/include,/usr/local/include,
-"" if $QTDIR != ''
-""     let &path = &path . $QTDIR . '/include/,'
-""     let &path = &path . $QTDIR . '/include/Qt/,'
-""     let &path = &path . $QTDIR . '/include/QtCore/,'
-""     let &path = &path . $QTDIR . '/include/Qt3Support/,'
-""     let &path = &path . $QTDIR . '/include/QtAssistant/,'
-""     let &path = &path . $QTDIR . '/include/QtDBus/,'
-""     let &path = &path . $QTDIR . '/include/QtDesigner/,'
-""     let &path = &path . $QTDIR . '/include/QtGui/,'
-""     let &path = &path . $QTDIR . '/include/QtNetwork/,'
-""     let &path = &path . $QTDIR . '/include/QtOpenGL/,'
-""     let &path = &path . $QTDIR . '/include/QtSql/,'
-""     let &path = &path . $QTDIR . '/include/QtSvg/,'
-""     let &path = &path . $QTDIR . '/include/QtTest/,'
-""     let &path = &path . $QTDIR . '/include/QtUiTools/,'
-""     let &path = &path . $QTDIR . '/include/QtXml/,'
-"" endif
-"" if $KDEDIR != ''
-""     let &path = &path . $KDEDIR . '/include/,'
-"" endif
-"" if $KDEDIRS != ''
-""     let &path = &path . substitute( $KDEDIRS, '\(:\|$\)', '/include,', 'g' )
-"" endif
-"" set path+=,
+set path=.,/usr/include,/usr/local/include,
+set path+=,
 "" 
 "" " Use makeobj to build
 "" set mp=makeobj
@@ -147,52 +124,6 @@ function! SetCodingStyle()
     endif
     "the path for the file
     let pathfn = expand( '%:p:h' )
-    "" if pathfn =~ 'nmm'
-    ""     call SmartParensOff()
-    ""     inoremap ( <C-R>=SpaceBetweenKeywordAndParens()<CR>
-    ""     let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\)\>'
-    ""     let g:need_brace_on_same_line = '\<\(if\|else\|while\|switch\|do\|enum\|for\|try\|catch\)\>'
-    ""     set sw=4
-    ""     set ts=4
-    ""     set noet
-    ""     set tw=100
-    "" elseif pathfn =~ 'kdepim'
-    ""     if strlen(mapcheck('(','i')) > 0
-    ""         iunmap (
-    ""     endif
-    ""     call SmartParensOn()
-    ""     let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\)\>'
-    ""     let g:need_brace_on_same_line = '\<\(if\|else\|while\|switch\|do\|foreach\|forever\|enum\|for\|try\|catch\)\>'
-    ""     set sw=2
-    ""     set sts=2
-    ""     set et
-    ""     set tw=100
-    "" elseif pathfn =~ 'xine-lib'
-    ""     call SmartParensOff()
-    ""     let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\)\>'
-    ""     let g:need_brace_on_same_line = '\<\(if\|else\|while\|switch\|do\|foreach\|forever\|enum\|for\|try\|catch\)\>'
-    ""     set sw=2
-    ""     set sts=2
-    ""     set ts=8
-    ""     set noet
-    ""     set tw=100
-    "" elseif pathfn =~ 'kdemultimedia\/juk'
-    ""     call SmartParensOff()
-    ""     let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\|if\|else\|while\|switch\|do\|foreach\|forever\|enum\|for\|try\|catch\)\>'
-    ""     let g:need_brace_on_same_line = ''
-    ""     set sw=4
-    ""     set sts=4
-    ""     set et
-    ""     set tw=100
-    "" elseif pathfn =~ 'kdenetwork\/kopete'
-    ""     call SmartParensOff()
-    ""     let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\|if\|else\|while\|switch\|do\|foreach\|forever\|enum\|for\|try\|catch\)\>'
-    ""     let g:need_brace_on_same_line = ''
-    ""     set sw=4
-    ""     set sts=4
-    ""     set noet
-    ""     set tw=100
-    "" else "if pathfn =~ '\(kdelibs\|qt-copy\)'
         call SmartParensOff()
         inoremap ( <C-R>=SpaceBetweenKeywordAndParens()<CR>
         let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\)\>'
@@ -201,7 +132,6 @@ function! SetCodingStyle()
         set sts=4
         set et
         set tw=100
-    "" endif
     if ( !exists("g:noautobrace") )
         call EnableSmartLineBreak()
     endif
@@ -222,7 +152,6 @@ function! EnableSmartLineBreak()
 endfunction
 
 function! SmartElse()
-    "let next = nr2char( getchar( 0 ) )
     let prefix = ''
     if strlen(g:need_brace_on_same_line) > 0 && 'else' =~ g:need_brace_on_same_line
         if getline('.') =~ '^\s*$'
