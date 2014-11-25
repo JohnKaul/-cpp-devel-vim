@@ -5,19 +5,19 @@
 " -- Begin Quote --
 "Vim
 "
-" You can find a vim script in kde-devel-vim.vim that helps you to keep
-" the coding style correct. In addition to defaulting to the kdelibs
-" coding style it will automatically use the correct style for Solid and
-" kdepim code. If you want to add rules for other projects feel free to
-" add them in the SetCodingStyle function.
+" You can find a vim script in kde-devel-vim.vim that helps you to
+" keep the coding style correct. In addition to defaulting to the
+" kdelibs coding style it will automatically use the correct style for
+" Solid and kdepim code. If you want to add rules for other projects
+" feel free to add them in the SetCodingStyle function.
 "
 " To use the script, include it in your ~/.vimrc like this:
 "
 " source /path/to/kde/sources/kdesdk/scripts/kde-devel-vim.vim
 "
-" Document started by Urs Wolfer. Some parts of this document have been
-" adopted from the Qt Coding Style document posted by Zack Rusin on
-" kde-core-devel.
+" Document started by Urs Wolfer. Some parts of this document have
+" been adopted from the Qt Coding Style document posted by Zack Rusin
+" on kde-core-devel.
 " -- End Quote --
 "
 " LINK:  http://techbase.kde.org/Policies/Kdelibs_Coding_Style#Vim
@@ -26,8 +26,8 @@
 "
 
 
-"To use this file, add this line to your ~/.vimrc:, w/o the dquote
-"source /path/to/kde/sources/kdesdk/scripts/kde-devel-vim.vim
+" To use this file, add this line to your ~/.vimrc:, w/o the dquote
+" source /path/to/kde/sources/kdesdk/scripts/kde-devel-vim.vim
 "
 " For CreateChangeLogEntry() : If you don't want to re-enter your
 " Name/Email in each vim session then make sure to have the viminfo
@@ -45,25 +45,15 @@ set suffixes+=.lo,.o,.moc,.la,.closure,.loT
 " Search for headers here
 set path=.,/usr/include,/usr/local/include,
 set path+=,
-"" 
-"" " Use makeobj to build
-"" set mp=makeobj
-
-"" " If TagList is Loaded then get a funny statusline
-"" " Only works if kde-devel-vim.vim is loaded after taglist.
-"" " Droping this script in ~/.vim/plugin works fine
-"" if exists('loaded_taglist')
-""     let Tlist_Process_File_Always=1
-""     set statusline=%<%f:[\ %{Tlist_Get_Tag_Prototype_By_Line()}\ ]\ %h%m%r%=%-14.(%l,%c%V%)\ %P
-"" endif
 
 " Insert tab character in whitespace-only lines, complete otherwise
 inoremap <Tab> <C-R>=SmartTab()<CR>
 
 if !exists("DisableSmartParens")
-" Insert a space after ( or [ and before ] or ) unless preceded by a matching
-" paren/bracket or space or inside a string or comment. Comments are only
-" recognized as such if they start on the current line :-(
+" Insert a space after ( or [ and before ] or ) unless preceded by a
+" matching paren/bracket or space or inside a string or comment.
+" Comments are only recognized as such if they start on the current
+" line :-(
 inoremap ( <C-R>=SmartParens( '(' )<CR>
 inoremap [ <C-R>=SmartParens( '[' )<CR>
 inoremap ] <C-R>=SmartParens( ']', '[' )<CR>
@@ -94,20 +84,15 @@ nmap ,# :call IncludeGuard()<CR>
 "" nmap ,lm :call LicenseHeader( "MIT" )<CR>
 nmap ,lb :call LicenseHeader( "BSD" )<CR>
 
-" Expand #i to #include <.h> or #include ".h". The latter is chosen
-" if the character typed after #i is a dquote
-" If the character is > #include <> is inserted (standard C++ headers w/o .h)
+" Expand #i to #include <.h> or #include ".h". The latter is chosen if
+" the character typed after #i is a dquote If the character is >
+" #include <> is inserted (standard C++ headers w/o .h)
 iab #i <C-R>=SmartInclude()<CR>
-
-"" " Insert a stripped down CVS diff
-"" iab DIFF <Esc>:call RunDiff()<CR>
 
 " mark 'misplaced' tab characters
 autocmd BufNewFile,BufRead *.cpp set listchars=tab:·\ ,trail:·
 autocmd BufNewFile,BufRead *.cpp set list
-
 autocmd BufNewFile,BufRead *.cpp iab i i
-
 autocmd BufNewFile,BufRead *.cpp set incsearch
 
 function! SetCodingStyle()
