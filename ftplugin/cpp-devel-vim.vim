@@ -121,7 +121,7 @@ autocmd BufNewFile,BufRead *.cpp call SetCodingStyle()
 " Functions
 " ====================================================================
 
-function! SetCodingStyle()
+function! SetCodingStyle()"{{{
     if &syntax == 'cmake'
         call SmartParensOff()
         set sw=3
@@ -147,13 +147,15 @@ function! SetCodingStyle()
         call EnableSmartLineBreak()
     endif
 endfunction
+"}}}
 
-function! DisableSmartLineBreak()
+function! DisableSmartLineBreak()"{{{
     iunmap <CR>
     iuna else
 endfunction
+"}}}
 
-function! EnableSmartLineBreak()
+function! EnableSmartLineBreak()"{{{
     if exists("*pumvisible")
         inoremap <CR> <C-R>=pumvisible() ? "\<lt>CR>" : "\<lt>ESC>:call SmartLineBreak()\<lt>CR>a\<lt>CR>"<CR>
     else
@@ -161,8 +163,9 @@ function! EnableSmartLineBreak()
     endif
     iab else <C-R>=SmartElse()<CR>
 endfunction
+"}}}
 
-function! SmartElse()
+function! SmartElse()"{{{
     let prefix = ''
     if strlen(g:need_brace_on_same_line) > 0 && 'else' =~ g:need_brace_on_same_line
         if getline('.') =~ '^\s*$'
@@ -175,8 +178,9 @@ function! SmartElse()
     endif
     return prefix . "else\<Right>"
 endfunction
+"}}}
 
-function! CreateMatchLine()
+function! CreateMatchLine()"{{{
     let linenum = line( '.' )
     let current_line = getline( linenum )
     " don't do magic if the cursor isn't at the end of the line or if it's
@@ -241,8 +245,9 @@ function! CreateMatchLine()
     endif
     return current_line
 endfunction
+"}}}
 
-function! AddClosingBrace(current_line)
+function! AddClosingBrace(current_line)"{{{
     if a:current_line =~ '\<enum\|class\|struct\>'
         :execute "normal o};\<ESC>k"
     elseif a:current_line =~ '\<namespace\>'
@@ -253,8 +258,9 @@ function! AddClosingBrace(current_line)
         :execute "normal o}\<ESC>k"
     endif
 endfunction
+"}}}
 
-function! SmartLineBreak()
+function! SmartLineBreak()"{{{
     if synIDattr(synID(line("."), col("."), 1), "name") == 'cComment' "inside a /* */ comment at the point where the line break occurs
         return
     endif
@@ -330,15 +336,17 @@ function! SmartLineBreak()
     endif
     :execute "normal $"
 endfunction
+"}}}
 
-function! SmartParensOn()
+function! SmartParensOn()"{{{
     inoremap ( <C-R>=SmartParens( '(' )<CR>
     inoremap [ <C-R>=SmartParens( '[' )<CR>
     inoremap ] <C-R>=SmartParens( ']', '[' )<CR>
     inoremap ) <C-R>=SmartParens( ')', '(' )<CR>
 endfunction
+"}}}
 
-function! SmartParensOff()
+function! SmartParensOff()"{{{
     if strlen(mapcheck('[','i')) > 0
         iunmap (
         iunmap [
@@ -346,8 +354,9 @@ function! SmartParensOff()
         iunmap )
     endif
 endfunction
+"}}}
 
-function! SmartTab()
+function! SmartTab()"{{{
     let col = col('.') - 1
     if !col || getline('.')[col-1] !~ '\k'
         return "\<Tab>"
@@ -355,8 +364,9 @@ function! SmartTab()
         return "\<C-P>"
     endif
 endfunction
+"}}}
 
-function! SmartParens( char, ... )
+function! SmartParens( char, ... )"{{{
     if ! ( &syntax =~ '^\(c\|cpp\|java\)$' )
         return a:char
     endif
@@ -391,8 +401,9 @@ function! SmartParens( char, ... )
     endif
     return a:char . ' '
 endfunction
+"}}}
 
-function! SpaceBetweenKeywordAndParens()
+function! SpaceBetweenKeywordAndParens()"{{{
     if ! ( &syntax =~ '^\(c\|cpp\|java\)$' )
         return '('
     endif
@@ -427,8 +438,9 @@ function! SpaceBetweenKeywordAndParens()
     endif
     return '('
 endfunction
+"}}}
 
-function! SwitchHeaderImpl()
+function! SwitchHeaderImpl()"{{{
     let privateheaders = '_p\.\([hH]\|hpp\|hxx\)$'
     let headers = '\.\([hH]\|hpp\|hxx\)$'
     let impl = '\.\([cC]\|cpp\|cc\|cxx\)$'
@@ -472,8 +484,9 @@ function! SwitchHeaderImpl()
         execute( "edit ".file )
     endif
 endfunction
+"}}}
 
-function! SwitchPrivateHeaderImpl()
+function! SwitchPrivateHeaderImpl()"{{{
     let privateheaders = '_p\.\([hH]\|hpp\|hxx\)$'
     let headers = '\.\([hH]\|hpp\|hxx\)$'
     let impl = '\.\([cC]\|cpp\|cc\|cxx\)$'
@@ -520,8 +533,9 @@ function! SwitchPrivateHeaderImpl()
         call CreatePrivateHeader( file )
     endif
 endfunction
+"}}}
 
-function! AskToSave()
+function! AskToSave()"{{{
     if &modified
         let yesorno = input("Save changes before switching file? [Y/n]")
         if yesorno == 'y' || yesorno == '' || yesorno == 'Y'
@@ -533,8 +547,9 @@ function! AskToSave()
     endif
     return 1
 endfunction
+"}}}
 
-function! CreatePrivateHeader( privateHeader )
+function! CreatePrivateHeader( privateHeader )"{{{
     let privateheaders = '_p\.\([hH]\|hpp\|hxx\)$'
     let headers = '\.\([hH]\|hpp\|hxx\)$'
     let impl = '\.\([cC]\|cpp\|cc\|cxx\)$'
@@ -573,22 +588,25 @@ function! CreatePrivateHeader( privateHeader )
     let @c = className
     :normal Gkko#include "h"class pQ_DECLARE_PUBLIC(c)protected:c *q_ptr;
 endfunction
+"}}}
 
-function! ClassNameFromHeader()
+function! ClassNameFromHeader()"{{{
     :normal gg
     call search( '^\s*class\s\+\([A-Za-z0-9]\+_EXPORT\s\+\)\?[A-Za-z_]\+\s*\(:\s*[,\t A-Za-z_]\+\)\?\s*\n\?\s*{' )
     "\zs and \ze mark start and end of the matching
     return matchstr( getline('.'), '\s\+\zs\w\+\ze\s*\(:\|{\|$\)' )
 endfunction
+"}}}
 
-function! ClassNameFromImpl()
+function! ClassNameFromImpl()"{{{
     :normal gg
     call search( '\s*\([A-Za-z_]\+\)::\1\s*(' )
     :normal "cye
     return @c
 endfunction
+"}}}
 
-function! IncludeGuard()
+function! IncludeGuard()"{{{
     let guard = toupper( substitute( expand( '%' ), '[\./]', '_', 'g' ) )
     call append( '^', '#define ' . guard )
     +
@@ -596,14 +614,16 @@ function! IncludeGuard()
     call append( '$', '#endif // ' . guard )
     +
 endfunction
+"}}}
 
-function! LicenseHeader( license )
+function! LicenseHeader( license )"{{{
     let filename = $HOME . "/" . a:license . "HEADER"
     execute ":0r " . filename
 "   call append( 0, system( "cat " . filename ) )
 endfunction
+"}}}
 
-function! SmartInclude()
+function! SmartInclude()"{{{
     let next = nr2char( getchar( 0 ) )
     if next == '"'
         return "#include \".h\"\<Left>\<Left>\<Left>"
@@ -613,8 +633,9 @@ function! SmartInclude()
     endif
     return "#include <.h>\<Left>\<Left>\<Left>"
 endfunction
+"}}}
 
-function! MapIdentHeader( ident )
+function! MapIdentHeader( ident )"{{{
     let header = tolower(substitute(a:ident, '::', '/', 'g')).'.h'
     if a:ident =~ 'Private$'
         let header = substitute(header, 'private', '_p', '')
@@ -788,9 +809,10 @@ function! MapIdentHeader( ident )
         let check = strpart( check, slash + 1 )
     endwhile
 endfunction
+"}}}
 
 " This is a rather dirty hack, but seems to work somehow :-) (malte)
-function! AddHeader()
+function! AddHeader()"{{{
     let s = getline( '.' )
     let i = col( '.' ) - 1
     while i > 0 && strpart( s, i, 1 ) !~ '[A-Za-z0-9_:]'
@@ -862,8 +884,9 @@ function! AddHeader()
         endif
     endif
 endfunction
+"}}}
 
-function! AddForward()
+function! AddForward()"{{{
     let s = getline( '.' )
     let i = col( '.' ) - 1
     while i > 0 && strpart( s, i, 1 ) !~ '[A-Za-z0-9_:]'
@@ -918,8 +941,9 @@ function! AddForward()
         endif
     endif
 endfunction
+"}}}
 
-function! RunDiff()
+function! RunDiff()"{{{
     echo 'Diffing....'
     read! cvs diff -bB -I \\\#include | egrep -v '(^Index:|^=+$|^RCS file:|^retrieving revision|^diff -u|^[+-]{3})'
 endfunction
@@ -968,8 +992,9 @@ function! CreateChangeLogEntry()
 
     execute "normal 3G$"
 endfunction
+"}}}
 
-function! AddQtSyntax()
+function! AddQtSyntax()"{{{
     if expand( "<amatch>" ) == "cpp"
         syn keyword qtKeywords     signals slots emit Q_SLOTS Q_SIGNALS
         syn keyword qtMacros       Q_OBJECT Q_WIDGET Q_PROPERTY Q_ENUMS Q_OVERRIDE Q_CLASSINFO Q_SETS SIGNAL SLOT Q_DECLARE_PUBLIC Q_DECLARE_PRIVATE Q_D Q_Q Q_DISABLE_COPY Q_DECLARE_METATYPE Q_PRIVATE_SLOT Q_FLAGS Q_INTERFACES Q_DECLARE_INTERFACE Q_EXPORT_PLUGIN2 Q_GADGET Q_SCRIPTABLE Q_INVOKABLE METHOD Q_ARG Q_RETURN_ARG Q_GLOBAL_STATIC Q_GLOBAL_STATIC_WITH_ARGS
@@ -988,8 +1013,9 @@ function! AddQtSyntax()
         hi def link kdeMacros           Type
     endif
 endfunction
+"}}}
 
-function! UpdateMocFiles()
+function! UpdateMocFiles()"{{{
     if &syntax == "cpp"
         let i = 1
         while i < 80
@@ -1005,6 +1031,7 @@ function! UpdateMocFiles()
         endwhile
     endif
 endfunction
+"}}}
 
 " vim: sw=4 sts=4 et
 "
