@@ -39,12 +39,22 @@
 " GPLHEADER and LGPLHEADER in your home directory. Their content will
 " be copied as license header then.
 
+
+" ====================================================================
+" Sets
+" ====================================================================
+
 " Don't include these in filename completions
 set suffixes+=.lo,.o,.moc,.la,.closure,.loT
 
 " Search for headers here
 set path=.,/usr/include,/usr/local/include,
 set path+=,
+
+
+" ====================================================================
+" Mappings
+" ====================================================================
 
 " Insert tab character in whitespace-only lines, complete otherwise
 inoremap <Tab> <C-R>=SmartTab()<CR>
@@ -89,11 +99,27 @@ nmap ,lb :call LicenseHeader( "BSD" )<CR>
 " #include <> is inserted (standard C++ headers w/o .h)
 iab #i <C-R>=SmartInclude()<CR>
 
+
+" ====================================================================
+" Autocommands
+" ====================================================================
+
 " mark 'misplaced' tab characters
 autocmd BufNewFile,BufRead *.cpp set listchars=tab:·\ ,trail:·
 autocmd BufNewFile,BufRead *.cpp set list
 autocmd BufNewFile,BufRead *.cpp iab i i
 autocmd BufNewFile,BufRead *.cpp set incsearch
+
+" automatic indenting is required for SmartLineBreak to work correctly
+autocmd BufNewFile,BufRead *.cpp filetype indent on
+
+autocmd Syntax *.cpp call AddQtSyntax()
+autocmd CursorHold *.cpp call UpdateMocFiles()
+autocmd BufNewFile,BufRead *.cpp call SetCodingStyle()
+
+" ====================================================================
+" Functions
+" ====================================================================
 
 function! SetCodingStyle()
     if &syntax == 'cmake'
@@ -149,9 +175,6 @@ function! SmartElse()
     endif
     return prefix . "else\<Right>"
 endfunction
-
-" automatic indenting is required for SmartLineBreak to work correctly
-autocmd BufNewFile,BufRead *.cpp filetype indent on
 
 function! CreateMatchLine()
     let linenum = line( '.' )
@@ -982,10 +1005,6 @@ function! UpdateMocFiles()
         endwhile
     endif
 endfunction
-
-autocmd Syntax *.cpp call AddQtSyntax()
-autocmd CursorHold *.cpp call UpdateMocFiles()
-autocmd BufNewFile,BufRead *.cpp call SetCodingStyle()
 
 " vim: sw=4 sts=4 et
 "
