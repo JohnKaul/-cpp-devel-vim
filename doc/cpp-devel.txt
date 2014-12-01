@@ -1,0 +1,103 @@
+*cpp-devel.txt*
+Last Updated: 12.01.14 10:54:35 AM
+
+==============================================================================
+CONTENTS                                                  *cpp-devel-contents*
+
+    1.Intro...................................|cpp-devel|
+    2.Functionality provided..................|cpp-devel-Functionality|
+        2.1.Global commands...................|cpp-devel-GlobalCommands|
+        2.2 Local command.....................|cpp-devel-LocalCommands|
+
+==============================================================================
+1. Intro                                                           *cpp-devel*
+
+What is the "cpp-devel" plugin?
+
+
+==============================================================================
+2. Functionality provided                            *cpp-devel-Functionality*
+
+------------------------------------------------------------------------------
+2.1. Global Commands                                *cpp-devel-GlobalCommands*
+
+:AddHeader()                                                      *:AddHeader*
+        Insert an #include statement for the current/last symbol
+        To remap: >
+        :inoremap <F5> <C-O>:call AddHeader()<CR>
+<        
+See also 
+
+
+:AddForward()                                                    *:AddForward*
+        Insert a forward declaration for the current/last symbol
+
+        To remap: >
+        :inoremap <S-F5> <C-O>:call AddForward()<CR>
+<        
+See also 
+
+
+:SwitchHeaderImp()                                          *:SwitchHeaderImp*
+        Switch between a header and implementation file.
+
+        To remap: >
+        :nmap <silent> ,h :call SwitchHeaderImpl()<CR>
+<        
+See also 
+
+
+:SwitchPrivateHeaderImpl()                          *:SwitchPrivateHeaderImpl*
+        Switch between a private header and implementation file.
+
+        To remap: >
+        :nmap <silent> ,p :call SwitchPrivateHeaderImpl()<CR>
+<        
+See also 
+
+
+:IncludeGuard()                                                *:IncludeGuard*
+
+        To remap: >
+        :nmap ,# :call IncludeGuard()<CR>
+<        
+See also 
+
+
+:SmartInclude()                                                 *SmartInclude*
+        Expand #i to #include <.h> or #include ".h". The latter is
+        chosen if the character typed after #i is a dquote If the
+        character is > #include <> is inserted (standard C++ headers
+        w/o .h)
+
+:LicenseHeader( license )                                      *LicenseHeader*
+
+
+------------------------------------------------------------------------------
+2.2. Local Commands                                  *cpp-devel-LocalCommands*
+
+SetCodingStyle()                                              *SetCodingStyle*
+        This procedure enables settings based on the syntax settings
+        for the current file. 
+
+DisableSmartLineBreak()                                *DisableSmartLineBreak*
+EnableSmartLineBreak()                                  *EnableSmartLineBreak*
+SmartElse()                                                        *SmartElse*
+CreateMatchLine()                                            *CreateMatchLine*
+AddClosingBrace(current_line)                                *AddClosingBrace*
+SmartLineBreak()                                              *SmartLineBreak*
+SmartParensOn()                                                *SmartParensOn*
+SmartParensOff()                                              *SmartParensOff*
+SmartTab()                                                         *SmartTabs*
+SmartParens( char, ... )                                         *SmartParens*
+SpaceBetweenKeywordAndParens()                  *SpaceBwtweenKeywordAndParens*
+AskToSave()                                                        *AskToSave*
+CreatePrivateHeader( privateHeader )                     *CreatePrivateHeader*
+ClassNameFromHeader()                                    *ClassNameFromHeader*
+ClassNameFromImpl()                                        *ClassNameFromImpl*
+SmartInclude()                                                  *SmartInclude*
+MapIdentHeader( ident )                                      *MapIndentHeader*
+RunDiff()                                                            *RunDiff*
+CreateChangeLogEntry()                                  *CreateChangeLogEntry*
+AddQtSyntax()                                                    *AddQtSyntax*
+UpdateMocFiles()                                              *UpdateMocFiles*
