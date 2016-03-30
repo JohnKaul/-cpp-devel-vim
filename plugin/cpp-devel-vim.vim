@@ -793,6 +793,25 @@ function! MapIdentHeader( ident )       "{{{
         return '<cstdio>'
     endif
 
+    " let standardLibrary = {
+    "             \ 'std::cout'       :   'iostream',
+    "             \ 'std::cerr'       :   'iostream',
+    "             \ 'std::endl'       :   'iostream',
+    "             \ 'std::fstream'    :   'iostream',
+    "             \ 'std::string'     :   'string.h',
+    "             \ 'isalnum'         :   'cctype',
+    "             \ 'isalpha'         :   'cctype',
+    "             \ 'isascii'         :   'cctype',
+    "             \ 'isgraph'         :   'cctype',
+    "             \ 'islower'         :   'cctype',
+    "             \ 'isprint'         :   'cctype',
+    "             \ 'ispunct'         :   'cctype',
+    "             \ 'isspace'         :   'cctype',
+    "             \ 'isupper'         :   'cctype',
+    "             \ 'isxdigit'        :   'cctype',
+    "             \ 'printf'          :   'cstdio',
+    " }
+
     let check = header
     while 1
         if filereadable( check )
@@ -1164,9 +1183,9 @@ let s:NONE = ""
 "                    =====  =======  ====================   =======
 call AddCompletion(  '{',   s:NONE,  "}",                      1    )
 call AddCompletion(  '{',   '}',     "\<CR>\<C-D>\<ESC>O",     0    )
-call AddCompletion(  '\[',  s:NONE,  "]",                      1    )
-call AddCompletion(  '\[',  '\]',    "\<CR>\<ESC>O\<TAB>",     0    )
-call AddCompletion(  '( ',  s:NONE,  ")",                      1    )
+call AddCompletion(  '\[ ', s:NONE,  " ]",                     1    )
+call AddCompletion(  '\[ ', ' \]',    "\<CR>\<ESC>O\<TAB>",    0    )
+call AddCompletion(  '( ',  s:NONE,  " )",                     1    )
 call AddCompletion(  '( ',  ')',     "\<CR>\<ESC>O\<TAB>",     0    )
 call AddCompletion(  '<',   s:NONE,  ">",                      1    )
 call AddCompletion(  '<',   '>',     "\<CR>\<ESC>O\<TAB>",     0    )
