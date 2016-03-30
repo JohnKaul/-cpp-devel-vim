@@ -9,7 +9,7 @@
 " the coding style correct. In addition to defaulting to the kdelibs
 " coding style it will automatically use the correct style for Solid and
 " kdepim code. If you want to add rules for other projects feel free to
-" add them in the SetCodingStyle function.
+" add them in the SetCppCodingStyle function.
 "
 " To use the script, include it in your ~/.vimrc like this:
 "
@@ -56,8 +56,11 @@ set path+=,
 ""     set statusline=%<%f:[\ %{Tlist_Get_Tag_Prototype_By_Line()}\ ]\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 "" endif
 
-" Insert tab character in whitespace-only lines, complete otherwise
+"" " Insert tab character in whitespace-only lines, complete otherwise
 inoremap <Tab> <C-R>=SmartTab()<CR>
+
+" Remap <TAB> for smart completion on various characters...
+inoremap <silent> <TAB>   <C-R>=SmartComplete()<CR>
 
 if !exists("DisableSmartParens")
 " Insert a space after ( or [ and before ] or ) unless preceded by a matching
@@ -105,10 +108,8 @@ imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'wi
 " Call AlignAssignments() for the current block of code.
 nmap <silent>  ;=  :call AlignAssignments()<CR>
 
-" Remap <TAB> for smart completion on various characters...
-inoremap <silent> <TAB>   <C-R>=SmartComplete()<CR>
 
-function! SetCodingStyle()     "{{{
+function! s:SetCppCodingStyle()     "{{{
     if &syntax == 'cmake'
         call SmartParensOff()
         set sw=3
@@ -117,19 +118,40 @@ function! SetCodingStyle()     "{{{
         set tw=0
         return
     endif
-    if ( &syntax !~ '^\(c\|cpp\|java\)$' )
+    if ( &syntax !~ '^\(c\|cpp\)$' )
         return
     endif
     "the path for the file
     let pathfn = expand( '%:p:h' )
         call SmartParensOff()
-        inoremap ( <C-R>=SpaceBetweenKeywordAndParens()<CR>
+        " inoremap ( <C-R>=SpaceBetweenKeywordAndParens()<CR> )
         let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\)\>'
         let g:need_brace_on_same_line = '\<\(if\|else\|while\|switch\|do\|foreach\|forever\|enum\|for\|try\|catch\)\>'
         set sw=4
         set sts=4
         set et
         set tw=100
+        set listchars=tab:?\ ,trail:?
+        " mark 'misplaced' tab characters
+        set list
+        iab i i
+        set incsearch
+        " call AddQtSyntax()
+        " call UpdateMocFiles()
+        set efm=%f:%l:\ %m,In\ file\ included\ from\ %f:%l:,\^I\^Ifrom\ %f:%l%m
+        " Set the error format for the Mingw compiler
+        
+        " The following few lines will allow out-of-source-builds; Essentially, we
+        " search the directory structure for a `BIN' folder and then a
+        " `BIN\Makefile' to direct `makeprg' where to call our compiler.
+           let $BINDIR = Directory_matcher()
+           cd $BINDIR
+           " look for a folder bin up and down to set the current directory there
+           " (for calling make).
+           let $MAKEFILE = findfile($BINDIR . "\\Makefile", ".;")
+           " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
+           " for the makeprg setting below
+           set makeprg=make\ -f\ $MAKEFILE
     if ( !exists("g:noautobrace") )
         call EnableSmartLineBreak()
     endif
@@ -1211,27 +1233,7 @@ augroup CPPProgramming
     autocmd!
     autocmd BufNewFile,BufRead,BufEnter *.cpp filetype indent on
     " automatic indenting is required for SmartLineBreak to work correctly
-    autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :set listchars=tab:?\ ,trail:?
-    " mark 'misplaced' tab characters
-    autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :set list
-    autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :iab i i
-    autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :set incsearch
-    autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :call SetCodingStyle()
-    "" autocmd Syntax *.cpp call AddQtSyntax()
-    "" autocmd CursorHold *.cpp call UpdateMocFiles()
-    au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :set efm=%f:%l:\ %m,In\ file\ included\ from\ %f:%l:,\^I\^Ifrom\ %f:%l%m
-
-    " The following few lines will allow out-of-source-builds; Essentially, we
-    " search the directory structure for a `BIN' folder and then a
-    " `BIN\Makefile' to direct `makeprg' where to call our compiler.
-       au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :let $BINDIR = Directory_matcher()
-       au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :cd $BINDIR
-       " look for a folder bin up and down to set the current directory there
-       " (for calling make).
-       au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :let $MAKEFILE = findfile($BINDIR . "\\Makefile", ".;")
-       " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
-       " for the makeprg setting below
-       au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :set makeprg=make\ -f\ $MAKEFILE
+    autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call s:SetCppCodingStyle()
 augroup END
 
 " vim: sw=4 sts=4 et
