@@ -2,7 +2,7 @@
 " is below my comment but I will also include the descrition given in
 " case the website goes down later.
 "
-" -- Begin Quote --
+" -- Begin Quote --"{{{
 "Vim
 "
 " You can find a vim script in kde-devel-vim.vim that helps you to keep
@@ -18,13 +18,12 @@
 " Document started by Urs Wolfer. Some parts of this document have been
 " adopted from the Qt Coding Style document posted by Zack Rusin on
 " kde-core-devel.
-" -- End Quote --
+" -- End Quote --"}}}
 "
 " LINK:  http://techbase.kde.org/Policies/Kdelibs_Coding_Style#Vim
 "
 " John Kaul
 "
-
 
 "To use this file, add this line to your ~/.vimrc:, w/o the dquote
 "source /path/to/kde/sources/kdesdk/scripts/kde-devel-vim.vim
@@ -80,35 +79,8 @@ inoremap <S-F5> <C-O>:call AddForward()<CR>
 nmap <silent> <F10> :call SwitchHeaderImpl()<CR>
 nmap <silent> ,p :call SwitchPrivateHeaderImpl()<CR>
 
-
-function! s:CommentLine()     "{{{
-  if getline(".") =~ '//X '
-    let hls=@/
-    s,^//X ,,
-    let @/=hls
-  else
-    let hls=@/
-    s,^,//X ,
-    let @/=hls
-  endif
-endfunction "}}}
-
-"" function! Komment()
-""   if getline(".") =~ '\/\*'
-""     let hls=@/
-""     s/^\/\*//
-""     s/*\/$//
-""     let @/=hls
-""   else
-""     let hls=@/
-""     s/^/\/*/
-""     s/$/*\//
-""     let @/=hls
-""   endif
-"" endfunction
-
-map <C-Bslash> :call s:CommentLine()<LF>
-" map k :call Komment()<CR>
+" Toggle line comments on Ctrl+\ 
+map <C-Bslash> :call CommentLine()<LF>
 
 " Insert an include guard based on the file name on ,#
 nmap ,# :call IncludeGuard()<CR>
@@ -126,6 +98,15 @@ iab #i <C-R>=SmartInclude()<CR>
 
 "" " Insert a stripped down CVS diff
 "" iab DIFF <Esc>:call RunDiff()<CR>
+
+" Project or standard C++/Java/PHP comment block
+imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'width':73})<CR>
+
+" Call AlignAssignments() for the current block of code.
+nmap <silent>  ;=  :call AlignAssignments()<CR>
+
+" Remap <TAB> for smart completion on various characters...
+inoremap <silent> <TAB>   <C-R>=SmartComplete()<CR>
 
 function! SetCodingStyle()     "{{{
     if &syntax == 'cmake'
@@ -1005,6 +986,20 @@ function! CreateChangeLogEntry()     "{{{
     execute "normal 3G$"
 endfunction "}}}
 
+function! CreateTODOEntry()     "{{{
+    let currentBuffer = expand( "%" )
+
+    if bufname( "TODO" ) != "" && bufwinnr( bufname( "TODO" ) ) != -1
+    execute bufwinnr( bufname( "TODO" ) ) . " wincmd w"
+    else
+        execute "split TODO"
+    endif
+
+    let newLine = "* [ ] ( " . currentBuffer . " ): "
+    call append( line('$'), newLine )
+    execute "normal 3G$"
+endfunction "}}}
+
 "" function! AddQtSyntax()     "{{{
 ""     if expand( "<amatch>" ) == "cpp"
 ""         syn keyword qtKeywords     signals slots emit Q_SLOTS Q_SIGNALS
@@ -1117,6 +1112,18 @@ function! AlignAssignments ()        "{{{
     endfor
 endfunction     "}}}
 
+function! CommentLine()     "{{{
+  if getline(".") =~ '//-x-   '
+    let hls=@/
+    s,^//-x-   ,,
+    let @/=hls
+  else
+    let hls=@/
+    s,^,//-x-   ,
+    let @/=hls
+  endif
+endfunction "}}}
+
 function! CommentBlock(comment, opt)        "{{{
     " Unpack optional arguments...
     let introducer = get(a:opt, 'intro', '/// '               )
@@ -1173,10 +1180,10 @@ endfunction     "}}}
 
 " Table of completion specifications (a list of lists)...
 let s:completions = []
-function! AddCompletion (left, right, completion, restore)      "{{{
+function! AddCompletion (left, right, completion, restore)      
     " Function to add user-defined completions...
     call insert(s:completions, [a:left, a:right, a:completion, a:restore])
-endfunction     "}}}
+endfunction     
 let s:NONE = ""
 " Table of completions...
 "                    Left   Right    Complete with...       Restore
@@ -1194,16 +1201,9 @@ call AddCompletion(  '"',   '"',     "\\n",                    1    )
 call AddCompletion(  "'",   s:NONE,  "'",                      1    )
 call AddCompletion(  "'",   "'",     s:NONE,                   0    )
 
-"C++/Java/PHP comment...
-imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'width':72})<CR>
-
-" Call align assignments for the current block of code.
-nmap <silent>  ;=  :call AlignAssignments()<CR>
-
-" Remap <TAB> for smart completion on various characters...
-inoremap <silent> <TAB>   <C-R>=SmartComplete()<CR>
-
-
+" ================================
+" Autogroup settings.
+" ================================
 augroup CPPProgramming
     autocmd!
     autocmd BufNewFile,BufRead,BufEnter *.cpp filetype indent on        " automatic indenting is required 
@@ -1216,13 +1216,17 @@ augroup CPPProgramming
     "" autocmd Syntax *.cpp call AddQtSyntax()
     "" autocmd CursorHold *.cpp call UpdateMocFiles()
     au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :set efm=%f:%l:\ %m,In\ file\ included\ from\ %f:%l:,\^I\^Ifrom\ %f:%l%m
-    au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :let $MAKEFILE = findfile("bin\\Makefile", ".;")
-    " Look for a folder bin\Makefile up and down in the current locaion; used
-    " for the makeprg setting below
+    "
+    " The following few lines will allow out-of-source-builds; Essentially, we
+    " search the directory structure for a `BIN' folder and then a
+    " `BIN\Makefile' to direct `makeprg' where to call our compiler.
     au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :let $BINDIR = Directory_matcher()
     au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :cd $BINDIR
     " look for a folder bin up and down to set the current directory there
     " (for calling make).
+    au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :let $MAKEFILE = findfile($BINDIR . "\\Makefile", ".;")
+    " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
+    " for the makeprg setting below
     au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :set makeprg=make\ -f\ $MAKEFILE
 augroup END
 
