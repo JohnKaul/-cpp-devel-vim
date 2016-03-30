@@ -44,7 +44,7 @@ set suffixes+=.lo,.o,.moc,.la,.closure,.loT
 " Search for headers here
 set path=.,/usr/include,/usr/local/include,
 set path+=,
-"" 
+""
 "" " Use makeobj to build
 "" set mp=makeobj
 
@@ -79,7 +79,7 @@ inoremap <S-F5> <C-O>:call AddForward()<CR>
 nmap <silent> <F10> :call SwitchHeaderImpl()<CR>
 nmap <silent> ,p :call SwitchPrivateHeaderImpl()<CR>
 
-" Toggle line comments on Ctrl+\ 
+" Toggle line comments on Ctrl+\
 map <C-Bslash> :call CommentLine()<LF>
 
 " Insert an include guard based on the file name on ,#
@@ -232,6 +232,8 @@ endfunction "}}}
 function! AddClosingBrace(current_line)"{{{
     if a:current_line =~ '\<enum\|class\|struct\>'
         :execute "normal o};\<ESC>k"
+    elseif a:current_line =~ '\<while\|if\|else\|for\|switch\|do\>'
+        :execute "normal o}\<ESC>k"
     elseif a:current_line =~ '\<namespace\>'
         let namespace = substitute( a:current_line, '^.*namespace\s\+', '', '' )
         let namespace = substitute( namespace, '\s.*$', '', '' )
@@ -466,7 +468,7 @@ function! SwitchPrivateHeaderImpl()     "{{{
     let impl = '\.\([cC]\|cpp\|cc\|cxx\)$'
     let fn = expand( '%' )
     " I added a beginning definition of LIST to see if I can get this function
-    " working. 
+    " working.
     let list = glob( substitue( fn, privaeheaders, '.*', '') )
     if fn =~ privateheaders
         let list = glob( substitute( fn, privateheaders, '.*', '' ) )
@@ -708,7 +710,7 @@ function! MapIdentHeader( ident )       "{{{
 ""           \a:ident == 'qsrand' ||
 ""           \a:ident == 'qrand'
 ""         return '<QtCore/QtGlobal>'
-"" 
+""
 ""     " Phonon stuff
 ""     elseif a:ident =~ '^Phonon::[A-Z]'
 ""         if a:ident =~ '^Phonon::\(NoDisc\|Cd\|Dvd\|Vcd\|.\+MetaData\|.*State\|.*Category\|.\+Error\)'
@@ -716,7 +718,7 @@ function! MapIdentHeader( ident )       "{{{
 ""         endif
 ""         return '<'.substitute(a:ident, '::', '/', 'g').'>'
 ""     endif
-"" 
+""
 ""     " KDE stuff
 ""     let kdeincdir = substitute(system('kde4-config --prefix'), '[\n\r]*', '', 'g').'/include/KDE/'
 ""     let classname = substitute(a:ident, '^.*:', '', '')
@@ -949,7 +951,7 @@ function! CreateChangeLogEntry()     "{{{
     elseif exists( "$EMAIL" )
         let mail = $EMAIL
     else
-        let mail = inputdialog( "Enter Name/Email for Changelog entry: " ) 
+        let mail = inputdialog( "Enter Name/Email for Changelog entry: " )
     if mail == ""
         echo "Aborted ChangeLog edit..."
         return
@@ -966,7 +968,7 @@ function! CreateChangeLogEntry()     "{{{
     let lastEntry = getline( nextnonblank( 1 ) )
     let newEntry = strftime("%Y-%m-%d") . "  " . mail
 
-    if lastEntry != newEntry 
+    if lastEntry != newEntry
         call append( 0, "" )
         call append( 0, "" )
         call append( 0, newEntry )
@@ -1010,7 +1012,7 @@ endfunction "}}}
 ""         syn keyword kdeMacros      K_DCOP ASYNC PHONON_ABSTRACTBASE PHONON_OBJECT PHONON_HEIR PHONON_ABSTRACTBASE_IMPL PHONON_OBJECT_IMPL PHONON_HEIR_IMPL PHONON_PRIVATECLASS PHONON_PRIVATEABSTRACTCLASS K_DECLARE_PRIVATE K_D K_EXPORT_PLUGIN K_PLUGIN_FACTORY K_PLUGIN_FACTORY_DEFINITION K_PLUGIN_FACTORY_DECLARATION K_GLOBAL_STATIC K_GLOBAL_STATIC_WITH_ARGS
 ""         syn keyword cRepeat        foreach
 ""         syn keyword cRepeat        forever
-"" 
+""
 ""         hi def link qtKeywords          Statement
 ""         hi def link qtMacros            Type
 ""         hi def link qtCast              Statement
@@ -1019,7 +1021,7 @@ endfunction "}}}
 ""         hi def link kdeMacros           Type
 ""     endif
 "" endfunction
-"" 
+""
 "" function! UpdateMocFiles()
 ""     if &syntax == "cpp"
 ""         let i = 1
@@ -1045,7 +1047,7 @@ function! Directory_matcher()       "{{{
                 \ "Debug",  "release"
                 \ ]
 
-    for $dir in s:directories 
+    for $dir in s:directories
         if finddir($dir, ",;") != ""
             return finddir($dir, ".;")
         endif
@@ -1058,12 +1060,12 @@ function! AlignAssignments ()        "{{{
     "   This function will align the assignments for the statements in a code
     "   block.
     "
-    "   Example: 
+    "   Example:
     "     applicants_name = 'Luke'
     "     mothers_maiden_name = 'Amidala'
     "     closest_relative = 'sister'
     "     fathers_occupation = 'Sith'
-    "     
+    "
     "     applicants_name     = 'Luke'
     "     mothers_maiden_name = 'Amidala'
     "     closest_relative    = 'sister'
@@ -1089,7 +1091,7 @@ function! AlignAssignments ()        "{{{
     let lines = []
     for linetext in getline(firstline, lastline)
         let fields = matchlist(linetext, ASSIGN_LINE)
-        if len(fields) 
+        if len(fields)
             call add(lines, {'lval':fields[1], 'op':fields[2], 'rval':fields[3]})
         else
             call add(lines, {'text':linetext,  'op':''                         })
@@ -1159,7 +1161,7 @@ function! SmartComplete ()   "{{{
         let pattern = left . curr_pos_pat . right
         if curr_line =~ pattern
             " Code around bug in setpos() when used at EOL...
-            if cursorcol == strlen(curr_line)+1 && strlen(completion)==1 
+            if cursorcol == strlen(curr_line)+1 && strlen(completion)==1
                 let cursor_back = "\<LEFT>"
             endif
 
@@ -1180,35 +1182,37 @@ endfunction     "}}}
 
 " Table of completion specifications (a list of lists)...
 let s:completions = []
-function! AddCompletion (left, right, completion, restore)      
+function! AddCompletion (left, right, completion, restore)
     " Function to add user-defined completions...
     call insert(s:completions, [a:left, a:right, a:completion, a:restore])
-endfunction     
+endfunction
 let s:NONE = ""
 " Table of completions...
-"                    Left   Right    Complete with...       Restore
-"                    =====  =======  ====================   =======
-call AddCompletion(  '{',   s:NONE,  "}",                      1    )
-call AddCompletion(  '{',   '}',     "\<CR>\<C-D>\<ESC>O",     0    )
-call AddCompletion(  '\[ ', s:NONE,  " ]",                     1    )
-call AddCompletion(  '\[ ', ' \]',    "\<CR>\<ESC>O\<TAB>",    0    )
-call AddCompletion(  '( ',  s:NONE,  " )",                     1    )
-call AddCompletion(  '( ',  ')',     "\<CR>\<ESC>O\<TAB>",     0    )
-call AddCompletion(  '<',   s:NONE,  ">",                      1    )
-call AddCompletion(  '<',   '>',     "\<CR>\<ESC>O\<TAB>",     0    )
-call AddCompletion(  '"',   s:NONE,  '"',                      1    )
-call AddCompletion(  '"',   '"',     "\\n",                    1    )
-call AddCompletion(  "'",   s:NONE,  "'",                      1    )
-call AddCompletion(  "'",   "'",     s:NONE,                   0    )
+"                    Left           Right       Complete with...            Restore
+"                    =====          =======     ====================        =======
+call AddCompletion(  '{',           s:NONE,     "}",                        1   )
+call AddCompletion(  '{',           '}',        "\<CR>\<C-D>\<ESC>O",       0   )
+call AddCompletion(  '\[ ',         s:NONE,     " ]",                       1   )
+call AddCompletion(  '\[ ',         ' \]',       "\<CR>\<ESC>O\<TAB>",      0   )
+call AddCompletion(  '( ',          s:NONE,     " )",                       1   )
+call AddCompletion(  '( ',          ')',        "\<CR>\<ESC>O\<TAB>",       0   )
+call AddCompletion(  '<',           s:NONE,     ">",                        1   )
+call AddCompletion(  '<',           '>',        "\<CR>\<ESC>O\<TAB>",       0   )
+call AddCompletion(  '"',           s:NONE,     '"',                        1   )
+call AddCompletion(  '"',           '"',        "\\n",                      1   )
+call AddCompletion(  "'",           s:NONE,     "'",                        1   )
+call AddCompletion(  "'",           "'",        s:NONE,                     0   )
+call AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1   )
 
 " ================================
 " Autogroup settings.
 " ================================
 augroup CPPProgramming
     autocmd!
-    autocmd BufNewFile,BufRead,BufEnter *.cpp filetype indent on        " automatic indenting is required 
-                                                                        " for SmartLineBreak to work correctly
-    autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :set listchars=tab:?\ ,trail:?       " mark 'misplaced' tab characters
+    autocmd BufNewFile,BufRead,BufEnter *.cpp filetype indent on
+    " automatic indenting is required for SmartLineBreak to work correctly
+    autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :set listchars=tab:?\ ,trail:?
+    " mark 'misplaced' tab characters
     autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :set list
     autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :iab i i
     autocmd BufRead,BufNewFile,BufEnter *.cpp,*.cc,*.c,*.h,*.hpp :set incsearch
@@ -1216,18 +1220,18 @@ augroup CPPProgramming
     "" autocmd Syntax *.cpp call AddQtSyntax()
     "" autocmd CursorHold *.cpp call UpdateMocFiles()
     au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :set efm=%f:%l:\ %m,In\ file\ included\ from\ %f:%l:,\^I\^Ifrom\ %f:%l%m
-    "
+
     " The following few lines will allow out-of-source-builds; Essentially, we
     " search the directory structure for a `BIN' folder and then a
     " `BIN\Makefile' to direct `makeprg' where to call our compiler.
-    au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :let $BINDIR = Directory_matcher()
-    au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :cd $BINDIR
-    " look for a folder bin up and down to set the current directory there
-    " (for calling make).
-    au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :let $MAKEFILE = findfile($BINDIR . "\\Makefile", ".;")
-    " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
-    " for the makeprg setting below
-    au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :set makeprg=make\ -f\ $MAKEFILE
+       au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :let $BINDIR = Directory_matcher()
+       au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :cd $BINDIR
+       " look for a folder bin up and down to set the current directory there
+       " (for calling make).
+       au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :let $MAKEFILE = findfile($BINDIR . "\\Makefile", ".;")
+       " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
+       " for the makeprg setting below
+       au BufRead,BufNewFile,BufEnter *.cpp,*.c,*.h,*.hpp :set makeprg=make\ -f\ $MAKEFILE
 augroup END
 
 " vim: sw=4 sts=4 et
