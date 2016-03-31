@@ -24,9 +24,52 @@
 "
 " John Kaul
 "
-
-"To use this file, add this line to your ~/.vimrc:, w/o the dquote
-"source /path/to/kde/sources/kdesdk/scripts/kde-devel-vim.vim
+" BRIEF:
+" This vim plugin will preform many "necessary"/"useful" things when
+" programming in the C++ lanugage.
+"
+" DESCRIPTION:
+"
+" FEATURES:
+" o  Automatic brace and parenthesis addition.
+"       ~ Intelligence added to place braces on same line as if,while,do,etc.
+" o  Automatic space between keyword and paren addition.
+" o  Quick switching between header and impl file.
+" o  Intelligent includes additions.
+"       ~ EG: Automatic "#include <string.h>" statement when cursor is on
+"             "std::string" statement.
+" o  Ability to add "standard" (ment to be overridden for personal,project
+"    stds) comment headers.
+" o  Change and TODO log entry helpers.
+" o  (un)comment line toggle
+"       ~ works with visual selection as well.
+" o  Intelligent directory searching to enable "out-of-source-building", like
+"    in the use of CMAKE.
+" o  Generic tab completion for braces, parenthesis and quotes.
+"       ~ This feature is only meant for convinces, please use a mechanism
+"         like "SnipMate" for better tab completion.
+" o  Ability to align assignments in surrounding statements.
+"
+" EXAMPLES:
+" When adding a WHILE--or IF, FOR, etc--statement, braces at the end of the line will be
+" added automatically. A key-press will be denoted with a bracket.
+"
+"       while(1)[enter]
+"  will become:
+"       while ( 1 ) {
+"
+"       }
+"
+"       for(;;;)[enter]
+"  will become:
+"       for ( ;;; ) {
+"
+"       }
+"
+"
+" NOTES:
+" To use this file, place it in your plugin directory or load on demand:
+"       source /path/to/vimscripts/cpp-devel-vim.vim
 "
 " For CreateChangeLogEntry() : If you don't want to re-enter your
 " Name/Email in each vim session then make sure to have the viminfo
@@ -38,78 +81,64 @@
 " GPLHEADER and LGPLHEADER in your home directory. Their content will
 " be copied as license header then.
 
-" Don't include these in filename completions
-set suffixes+=.lo,.o,.moc,.la,.closure,.loT
-
-" Search for headers here
-set path=.,/usr/include,/usr/local/include,
-set path+=,
-""
-"" " Use makeobj to build
-"" set mp=makeobj
-
-"" " If TagList is Loaded then get a funny statusline
-"" " Only works if kde-devel-vim.vim is loaded after taglist.
-"" " Droping this script in ~/.vim/plugin works fine
-"" if exists('loaded_taglist')
-""     let Tlist_Process_File_Always=1
-""     set statusline=%<%f:[\ %{Tlist_Get_Tag_Prototype_By_Line()}\ ]\ %h%m%r%=%-14.(%l,%c%V%)\ %P
-"" endif
-
-"" " Insert tab character in whitespace-only lines, complete otherwise
-inoremap <Tab> <C-R>=SmartTab()<CR>
-
-" Remap <TAB> for smart completion on various characters...
-inoremap <silent> <TAB>   <C-R>=SmartComplete()<CR>
-
-if !exists("DisableSmartParens")
-" Insert a space after ( or [ and before ] or ) unless preceded by a matching
-" paren/bracket or space or inside a string or comment. Comments are only
-" recognized as such if they start on the current line :-(
-inoremap ( <C-R>=SmartParens( '(' )<CR>
-inoremap [ <C-R>=SmartParens( '[' )<CR>
-inoremap ] <C-R>=SmartParens( ']', '[' )<CR>
-inoremap ) <C-R>=SmartParens( ')', '(' )<CR>
-endif
-
-" Insert an #include statement for the current/last symbol
-inoremap <F5> <C-O>:call AddHeader()<CR>
-
-" Insert a forward declaration for the current/last symbol
-inoremap <S-F5> <C-O>:call AddForward()<CR>
-
-" Switch between header and implementation files on ,h
-nmap <silent> <F10> :call SwitchHeaderImpl()<CR>
-nmap <silent> ,p :call SwitchPrivateHeaderImpl()<CR>
-
-" Toggle line comments on Ctrl+\
-map <C-Bslash> :call CommentLine()<LF>
-
-" Insert an include guard based on the file name on ,#
-nmap ,# :call IncludeGuard()<CR>
-
-" Insert license headers at the top of the file
-"" nmap ,lg :call LicenseHeader( "GPL" )<CR>
-"" nmap ,ll :call LicenseHeader( "LGPL" )<CR>
-"" nmap ,lm :call LicenseHeader( "MIT" )<CR>
-nmap ,lb :call LicenseHeader( "BSD" )<CR>
-
-" Expand #i to #include <.h> or #include ".h". The latter is chosen
-" if the character typed after #i is a dquote
-" If the character is > #include <> is inserted (standard C++ headers w/o .h)
-iab #i <C-R>=SmartInclude()<CR>
-
-"" " Insert a stripped down CVS diff
-"" iab DIFF <Esc>:call RunDiff()<CR>
-
-" Project or standard C++/Java/PHP comment block
-imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'width':73})<CR>
-
-" Call AlignAssignments() for the current block of code.
-nmap <silent>  ;=  :call AlignAssignments()<CR>
-
+" " If TagList is Loaded then get a funny statusline
+" " Only works if kde-devel-vim.vim is loaded after taglist.
+" " Droping this script in ~/.vim/plugin works fine
+" if exists('loaded_taglist')
+"     let Tlist_Process_File_Always=1
+"     set statusline=%<%f:[\ %{Tlist_Get_Tag_Prototype_By_Line()}\ ]\ %h%m%r%=%-14.(%l,%c%V%)\ %P
+" endif
 
 function! SetCppCodingStyle()     "{{{
+    let pathfn = expand( '%:p:h' )
+    "the path for the file
+    "
+    " Don't include these in filename completions
+    set suffixes+=.lo,.o,.moc,.la,.closure,.loT
+
+    " Search for headers here
+    set path=.,/usr/include,/usr/local/include,
+    set path+=,
+
+    call s:INOREMappings()
+    call s:NormalVisualMappings()
+    call s:NormalMappings()
+    call s:InsertMappings()
+    call s:InsertAbbreviations()
+
+    " call SmartParensOff()
+    call SmartParensOn()
+    " inoremap ( <C-R>=SpaceBetweenKeywordAndParens()<CR>
+
+    let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\)\>'
+    let g:need_brace_on_same_line = '\<\(if\|else\|while\|switch\|do\|foreach\|forever\|enum\|for\|try\|catch\)\>'
+    set sw=4
+    set sts=4
+    set et
+    set tw=100
+    set listchars=tab:?\ ,trail:?
+    " mark 'misplaced' tab characters
+    set list
+    iab i i
+    set incsearch
+    " call AddQtSyntax()
+    " call UpdateMocFiles()
+    "
+    set efm=%f:%l:\ %m,In\ file\ included\ from\ %f:%l:,\^I\^Ifrom\ %f:%l%m
+    " Set the error format for the Mingw compiler
+
+    " The following few lines will allow out-of-source-builds; Essentially, we
+    " search the directory structure for a `BIN' folder and then a
+    " `BIN\Makefile' to direct `makeprg' where to call our compiler.
+        let $BINDIR = Directory_matcher()
+        cd $BINDIR
+        " look for a folder bin up and down to set the current directory there
+        " (for calling make).
+        let $MAKEFILE = findfile($BINDIR . "/Makefile", ".;")
+        " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
+        " for the makeprg setting below
+        set makeprg=make\ -f\ $MAKEFILE
+
     if &syntax == 'cmake'
         call SmartParensOff()
         set sw=3
@@ -118,44 +147,88 @@ function! SetCppCodingStyle()     "{{{
         set tw=0
         return
     endif
-    if ( &syntax !~ '^\(c\|cpp\)$' )
-        return
-    endif
-    "the path for the file
-    let pathfn = expand( '%:p:h' )
-        call SmartParensOff()
-        " inoremap ( <C-R>=SpaceBetweenKeywordAndParens()<CR> )
-        let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\)\>'
-        let g:need_brace_on_same_line = '\<\(if\|else\|while\|switch\|do\|foreach\|forever\|enum\|for\|try\|catch\)\>'
-        set sw=4
-        set sts=4
-        set et
-        set tw=100
-        set listchars=tab:?\ ,trail:?
-        " mark 'misplaced' tab characters
-        set list
-        iab i i
-        set incsearch
-        " call AddQtSyntax()
-        " call UpdateMocFiles()
-        set efm=%f:%l:\ %m,In\ file\ included\ from\ %f:%l:,\^I\^Ifrom\ %f:%l%m
-        " Set the error format for the Mingw compiler
-        
-        " The following few lines will allow out-of-source-builds; Essentially, we
-        " search the directory structure for a `BIN' folder and then a
-        " `BIN\Makefile' to direct `makeprg' where to call our compiler.
-           let $BINDIR = Directory_matcher()
-           cd $BINDIR
-           " look for a folder bin up and down to set the current directory there
-           " (for calling make).
-           let $MAKEFILE = findfile($BINDIR . "/Makefile", ".;")
-           " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
-           " for the makeprg setting below
-           set makeprg=make\ -f\ $MAKEFILE
     if ( !exists("g:noautobrace") )
         call EnableSmartLineBreak()
     endif
 endfunction "}}}
+
+function! s:INOREMappings()     "{{{
+    " ===========================================================================
+    " Insert mode mappings
+    " ===========================================================================
+    " Insert tab character in whitespace-only lines, complete otherwise
+    inoremap <Tab> <C-R>=SmartTab()<CR>
+
+    " Remap <TAB> for smart completion on various characters...
+    inoremap <silent> <TAB>   <C-R>=SmartComplete()<CR>
+
+    "if !exists("DisableSmartParens")
+        " Insert a space after ( or [ and before ] or ) unless preceded by a matching
+        " paren/bracket or space or inside a string or comment. Comments are only
+        " recognized as such if they start on the current line :-(
+        inoremap ( <C-R>=SmartParens( '(' )<CR>
+        inoremap [ <C-R>=SmartParens( '[' )<CR>
+        inoremap ] <C-R>=SmartParens( ']', '[' )<CR>
+        inoremap ) <C-R>=SmartParens( ')', '(' )<CR>
+    "endif
+
+    " Insert an #include statement for the current/last symbol
+    inoremap <F5> <C-O>:call AddHeader()<CR>
+
+    " Insert a forward declaration for the current/last symbol
+    inoremap <S-F5> <C-O>:call AddForward()<CR>
+endfunction "}}}
+
+function! s:NormalVisualMappings()       "{{{
+    " ===========================================================================
+    " Normal and visual mode mappings
+    " ===========================================================================
+    " Toggle line comments on Ctrl+\
+    map <C-Bslash> :call CommentLine()<LF>
+endfunction     "}}}
+
+function! s:NormalMappings()         "{{{
+    " ===========================================================================
+    " Normal mode mappings
+    " ===========================================================================
+
+    " Switch between header and implementation files on ,h
+    nmap <silent> <F10> :call SwitchHeaderImpl()<CR>
+    nmap <silent> ,p :call SwitchPrivateHeaderImpl()<CR>
+
+    " Insert an include guard based on the file name on ,#
+    nmap ,# :call IncludeGuard()<CR>
+
+    " Insert license headers at the top of the file
+    "" nmap ,lg :call LicenseHeader( "GPL" )<CR>
+    "" nmap ,ll :call LicenseHeader( "LGPL" )<CR>
+    "" nmap ,lm :call LicenseHeader( "MIT" )<CR>
+    nmap ,lb :call LicenseHeader( "BSD" )<CR>
+
+    " Call AlignAssignments() for the current block of code.
+    nmap <silent>  ;=  :call AlignAssignments()<CR>
+endfunction     "}}}
+
+function! s:InsertMappings()     "{{{
+    " ===========================================================================
+    " Insert mode mappings
+    " ===========================================================================
+    " Project or standard C++/Java/PHP comment block
+    imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'width':73})<CR>
+endfunction         "}}}
+
+function! s:InsertAbbreviations()        "{{{
+    " ===========================================================================
+    " Insert mode abbreviations
+    " ===========================================================================
+    " Expand #i to #include <.h> or #include ".h". The latter is chosen
+    " if the character typed after #i is a dquote
+    " If the character is > #include <> is inserted (standard C++ headers w/o .h)
+    iab #i <C-R>=SmartInclude()<CR>
+
+    "" " Insert a stripped down CVS diff
+    "" iab DIFF <Esc>:call RunDiff()<CR>
+endfunction     "}}}
 
 function! DisableSmartLineBreak()     "{{{
     iunmap <CR>
@@ -244,14 +317,28 @@ function! CreateMatchLine()     "{{{
     while current_line =~ '\[.*\]'
         let current_line = substitute( current_line, '\[[^\[\]]*\]', '', 'g' )
     endwhile
-    " if <CR> was pressed inside ( ), [ ] or /* */ don't add braces
-    if current_line =~ '[(\[]' || current_line =~ '/\*'
-        return ''
-    endif
+    "" " if <CR> was pressed inside ( ), [ ] or /* */ don't add braces
+    "" if current_line =~ '[(\[]' || current_line =~ '/\*'
+    ""     return ''
+    "" endif
     return current_line
 endfunction "}}}
 
-function! AddClosingBrace(current_line)"{{{
+"" function! AddClosingBrace(current_line)"{{{
+""     if a:current_line =~ '\<enum\|class\|struct\>'
+""         :execute "normal o};\<ESC>k"
+""     elseif a:current_line =~ '\<while\|if\|else\|for\|switch\|do\>'
+""         :execute "normal o}\<ESC>k"
+""     elseif a:current_line =~ '\<namespace\>'
+""         let namespace = substitute( a:current_line, '^.*namespace\s\+', '', '' )
+""         let namespace = substitute( namespace, '\s.*$', '', '' )
+""         :execute "normal o} // namespace " . namespace . "\<ESC>k"
+""     else
+""         :execute "normal o}\<ESC>k"
+""     endif
+"" endfunction "}}}
+
+function! AddClosingChar(current_line, Ch)"{{{
     if a:current_line =~ '\<enum\|class\|struct\>'
         :execute "normal o};\<ESC>k"
     elseif a:current_line =~ '\<while\|if\|else\|for\|switch\|do\>'
@@ -261,7 +348,7 @@ function! AddClosingBrace(current_line)"{{{
         let namespace = substitute( namespace, '\s.*$', '', '' )
         :execute "normal o} // namespace " . namespace . "\<ESC>k"
     else
-        :execute "normal o}\<ESC>k"
+        :execute "normal o" . a:Ch ."\<ESC>k"
     endif
 endfunction "}}}
 
@@ -329,15 +416,22 @@ function! SmartLineBreak()     "{{{
         else
             :execute ':s/$/ {/'
         endif
-        call AddClosingBrace(match_line)
+        call AddClosingChar(match_line, '}')
     elseif getline('.') =~ '^\s*{$'
-        call AddClosingBrace('')
+        call AddClosingChar('', '}')
+
+    elseif getline('.') =~ '^\s*($'
+        call AddClosingChar('', ')')
+
+    elseif getline('.') =~ '^\s*[$'
+        call AddClosingChar('', ']')
+
     elseif match_position2 > -1
         if match_line =~ '{$'
             :execute ':s/\s*{$//'
         endif
         :execute "normal o{"
-        call AddClosingBrace(match_line)
+        call AddClosingChar(match_line, '}')
     endif
     :execute "normal $"
 endfunction "}}}
@@ -368,7 +462,7 @@ function! SmartTab()     "{{{
 endfunction "}}}
 
 function! SmartParens( char, ... )"{{{
-    if ! ( &syntax =~ '^\(c\|cpp\|java\)$' )
+    if ! ( &syntax =~ '^\(c\|cpp\)$' )
         return a:char
     endif
     let s = strpart( getline( '.' ), 0, col( '.' ) - 1 )
@@ -412,9 +506,9 @@ function! SpaceBetweenKeywordAndParens()     "{{{
         " text inside a comment
         return '('
     endif
-    let s = substitute( s, '/\*\([^*]\|\*\@!/\)*\*/', '', 'g' )
-    let s = substitute( s, "'[^']*'", '', 'g' )
-    let s = substitute( s, '"\(\\"\|[^"]\)*"', '', 'g' )
+    let s = substitute( s, '/\*\([^*]\|\*\@!/\)*\*/', ' ', 'g' )
+    let s = substitute( s, "'[^']*'", ' ', 'g' )
+    let s = substitute( s, '"\(\\"\|[^"]\)*"', ' ', 'g' )
     if s =~ "\\([\"']\\|/\\*\\)"
         " text inside a string
         return '('
@@ -1231,7 +1325,7 @@ call AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1   
 " ================================
 augroup CPPProgramming
     autocmd!
-    autocmd BufNewFile,BufRead,BufEnter *.cpp filetype indent on
+    autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp filetype indent on
     " automatic indenting is required for SmartLineBreak to work correctly
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call SetCppCodingStyle()
 augroup END
