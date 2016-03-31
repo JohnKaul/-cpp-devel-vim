@@ -109,7 +109,7 @@ imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'wi
 nmap <silent>  ;=  :call AlignAssignments()<CR>
 
 
-function! s:SetCppCodingStyle()     "{{{
+function! SetCppCodingStyle()     "{{{
     if &syntax == 'cmake'
         call SmartParensOff()
         set sw=3
@@ -148,7 +148,7 @@ function! s:SetCppCodingStyle()     "{{{
            cd $BINDIR
            " look for a folder bin up and down to set the current directory there
            " (for calling make).
-           let $MAKEFILE = findfile($BINDIR . "\\Makefile", ".;")
+           let $MAKEFILE = findfile($BINDIR . "/Makefile", ".;")
            " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
            " for the makeprg setting below
            set makeprg=make\ -f\ $MAKEFILE
@@ -1233,7 +1233,7 @@ augroup CPPProgramming
     autocmd!
     autocmd BufNewFile,BufRead,BufEnter *.cpp filetype indent on
     " automatic indenting is required for SmartLineBreak to work correctly
-    autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call s:SetCppCodingStyle()
+    autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call SetCppCodingStyle()
 augroup END
 
 " vim: sw=4 sts=4 et
