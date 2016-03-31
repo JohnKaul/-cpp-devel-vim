@@ -12,30 +12,69 @@ CONTENTS                                                  *cpp-devel-contents*
 ==============================================================================
 1. Intro                                                           *cpp-devel*
 
-What is the "cpp-devel" plugin?
-
+What is the "cpp-devel" plugin? This plugin will help preform many
+"necessary" and/or "usefull" functions to help write C++ code.
 
 ==============================================================================
 2. Functionality provided                            *cpp-devel-Functionality*
 
-------------------------------------------------------------------------------
+o  Automatic brace and parenthesis addition.
+      ~ Intelligence added to place braces on same line as if,while,do,etc.
+o  Automatic space between keyword and paren addition.
+o  Quick switching between header and impl file.
+o  Intelligent includes additions.
+      ~ EG: Automatic "#include <string.h>" statement when cursor is on
+            "std::string" statement.
+o  Ability to add "standard" (ment to be overridden for personal,project
+   stds) comment headers.
+o  Change and TODO log entry helpers.
+o  (un)comment line toggle
+      ~ works with visual selection as well.
+o  Intelligent directory searching to enable "out-of-source-building", like
+   in the use of CMAKE.
+o  Generic tab completion for braces, parenthesis and quotes.
+      ~ This feature is only meant for convinces, please use a mechanism
+        like "SnipMate" for better tab completion.
+o  Ability to align assignments in surrounding statements.
+
+===-----------------------------------X------------------------------------===
 2.1. Global Commands                                *cpp-devel-GlobalCommands*
 
+------------------------------------------------------------------------------
 :DisableSmartLineBreak()                               *DisableSmartLineBreak*
+
+See also
+
+------------------------------------------------------------------------------
 :EnableSmartLineBreak()                                 *EnableSmartLineBreak*
 
+See also
+
+------------------------------------------------------------------------------
 :SmartParensOff()                                             *SmartParensOff*
 
+See also
+
+------------------------------------------------------------------------------
 :AddHeader()                                                      *:AddHeader*
-        Insert an #include statement for the current/last symbol
+        Insert an #include statement for the current/last symbol.
+
+        Example:
+        With cursor on "std::string" and <F5> pressed, the satement
+        "#include <string.h>" will be added to the file.
+
+        This function calls the *MapIdentHeader*' function to add an
+        include statement to the top of the file.
+
         To remap: >
         :inoremap <F5> <C-O>:call AddHeader()<CR>
 <
 See also
 
-
+------------------------------------------------------------------------------
 :AddForward()                                                    *:AddForward*
-        Insert a forward declaration for the current/last symbol
+        This fuction will add a forward decl for the class the current
+        currser is on.
 
         To remap: >
         :inoremap <S-F5> <C-O>:call AddForward()<CR>
@@ -43,6 +82,7 @@ See also
 See also
 
 
+------------------------------------------------------------------------------
 :SwitchHeaderImp()                                          *:SwitchHeaderImp*
         Switch between a header and implementation file.
 
@@ -52,6 +92,7 @@ See also
 See also
 
 
+------------------------------------------------------------------------------
 :SwitchPrivateHeaderImpl()                          *:SwitchPrivateHeaderImpl*
         Switch between a private header and implementation file.
 
@@ -61,7 +102,9 @@ See also
 See also
 
 
+------------------------------------------------------------------------------
 :IncludeGuard()                                                *:IncludeGuard*
+        Adds a forward declaration.
 
         To remap: >
         :nmap ,# :call IncludeGuard()<CR>
@@ -69,6 +112,7 @@ See also
 See also
 
 
+------------------------------------------------------------------------------
 :SmartInclude()                                                 *SmartInclude*
         Expand #i to #include <.h> or #include ".h". The latter is
         chosen if the character typed after #i is a dquote If the
@@ -78,17 +122,23 @@ See also
 :Licenseeader( license )                                      *LicenseHeader*
 
 
+------------------------------------------------------------------------------
 :CreateChangeLogEntry()                                 *CreateChangeLogEntry*
         Create a changelog entry. This function will split-open the
         changelog file and start an entry for you.
+
 See also *CreateTODOEntry*
 
 
+------------------------------------------------------------------------------
 :CreateTODOEntry()                                          *CreateTODOEntry*
         Create a TODO entry. This function will split-open the
         TODO file and start an entry for you.
+
 See also *CreateChangeLogEntry*
 
+
+------------------------------------------------------------------------------
 :AlignAssignments()                                        *AlightAssignments*
 
         This function will align the assignments for the statements in
@@ -99,7 +149,7 @@ See also *CreateChangeLogEntry*
                 mothers_maiden_name = 'Amidala'
                 closest_relative = 'sister'
                 fathers_occupation = 'Sith'
-                
+         ...will become...
                 applicants_name     = 'Luke'
                 mothers_maiden_name = 'Amidala'
                 closest_relative    = 'sister'
@@ -111,6 +161,8 @@ See also *CreateChangeLogEntry*
 
 See also
 
+
+------------------------------------------------------------------------------
 :CommentLine()                                                   *CommentLine*
         Adds or removes a comment on lines (works with visual
         selection).
@@ -122,6 +174,8 @@ See also
 
 See also
 
+
+------------------------------------------------------------------------------
 CommentBlock()                                                  *CommentBlock*
         Adds a standard comment block; this function is ment to be
         extended to offer a company/project/personal comment block
@@ -138,16 +192,16 @@ CommentBlock()                                                  *CommentBlock*
 <
 
         To remap: >
-                " Project or standard C++/Java/PHP comment block
+                " Project or standard C++ comment block
                 imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'width':73})<CR>
 <
 
 See also
 
-------------------------------------------------------------------------------
+===-----------------------------------X------------------------------------===
 2.2. Local Commands                                  *cpp-devel-LocalCommands*
 
-s:SetCppCodingStyle()                                       *s:SetCodingStyle*
+SetCppCodingStyle()                                           *SetCodingStyle*
         This procedure enables settings based on the syntax settings
         for the current file.
 
@@ -158,7 +212,7 @@ SmartLineBreak()                                              *SmartLineBreak*
 SmartParensOn()                                                *SmartParensOn*
 SmartTab()                                                         *SmartTabs*
 SmartParens( char, ... )                                         *SmartParens*
-SpaceBetweenKeywordAndParens()                  *SpaceBwtweenKeywordAndParens*
+SpaceBetweenKeywordAndParens()                  *SpaceBetweenKeywordAndParens*
         This function will add a space after the paren for the
         following fuctions:
                 if, for, while, switch, foreach, forever
@@ -166,23 +220,17 @@ AskToSave()                                                        *AskToSave*
 CreatePrivateHeader( privateHeader )                     *CreatePrivateHeader*
 ClassNameFromHeader()                                    *ClassNameFromHeader*
 ClassNameFromImpl()                                        *ClassNameFromImpl*
-SmartInclude()                                                  *SmartInclude*
 RunDiff()                                                            *RunDiff*
-CreateChangeLogEntry()                                  *CreateChangeLogEntry*
+        Not used.
 AddQtSyntax()                                                    *AddQtSyntax*
+        Not used.
 UpdateMocFiles()                                              *UpdateMocFiles*
+        Not used.
 MapIdentHeader()                                              *MapIdentHeader*
         This function basicaly maps some functions to their headers.
 
         e.g. It knows that std::string needs the <string.h> file and
 AddHeader()                                                        *AddHeader*
-        This function calls the `MapIdentHeader()' function to add an
-        include statement to the top of the file.
-AddForward()                                                      *AddForward*
-        This fuction will add a forward decl for the class the current
-        currser is on.
-RunDiff()                                                            *RunDiff*
-AddQtSyntax()                                                    *AddQtSyntax*
 Directory_matcher()                                        *Directory_matcher*
         This function will search up and down directories from the
         current files location to look for a list of different
