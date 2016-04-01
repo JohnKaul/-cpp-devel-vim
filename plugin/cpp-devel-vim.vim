@@ -101,8 +101,25 @@ function! SetCppCodingStyle()     "{{{
     set suffixes+=.lo,.o,.moc,.la,.closure,.loT
 
     " Search for headers here
-    set path=.,/usr/include,/usr/local/include,
-    set path+=,
+
+    let DirectoriesToSearch = [ "src",  "source" ]
+    let s:SrcDirectory =s:Directory_matcher(DirectoriesToSearch)
+
+    let DirectoriesToSearch = [ "inc",  "include" ]
+    let s:IncDirectory =s:Directory_matcher(DirectoriesToSearch)
+
+    let DirectoriesToSearch = [ "lib",  "library", "libs", "libraries" ]
+    let s:LibDirectory =s:Directory_matcher(DirectoriesToSearch)
+
+    let s:SrcDirectory =expand(s:SrcDirectory)
+    let s:IncDirectory =expand(s:IncDirectory)
+    let s:LibDirectory =expand(s:LibDirectory)
+
+    " set path='.,/usr/include,/usr/local/include,' 
+    " set path+=,
+
+    let &path = '.,/usr/include,/usr/local/include,' . s:SrcDirectory . ',' . s:IncDirectory . ',' . s:LibDirectory
+
 
     call s:INOREMappings()
     call s:NormalVisualMappings()
@@ -1143,14 +1160,14 @@ endfunction "}}}
 ""     endif
 "" endfunction "}}}
 
-function! s:Directory_matcher()       "{{{
+function! s:Directory_matcher(directories)       "{{{
     "List of troublesome words...
-    let s:directories = [
-                \ "bin",  "build",
-                \ "binary",  "Development",
-                \ "Debug",  "release"
-                \ ]
-    for $dir in s:directories
+    " let s:directories = [
+    "             \ "bin",  "build",
+    "             \ "binary",  "Development",
+    "             \ "Debug",  "release"
+    "             \ ]
+    for $dir in a:directories
         if finddir($dir, ",;") != ""
             return finddir($dir, ".;")
         endif
@@ -1354,7 +1371,7 @@ function! s:MakeSetup()     "{{{
                                \ "binary",  "Development",
                                \ "Debug",  "release"
                                \ ]
-    let s:BinDirectory =s:Directory_matcher()
+    let s:BinDirectory =s:Directory_matcher(DirectoriesToSearch)
 
     if s:MSWIN
         let s:MakefileLocation = findfile(s:BinDirectory . "\\Makefile", ".;")
