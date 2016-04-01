@@ -89,8 +89,41 @@
 "     set statusline=%<%f:[\ %{Tlist_Get_Tag_Prototype_By_Line()}\ ]\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 " endif
 
+"------------------------------------------------------------------------------
+"
+let s:MSWIN = has("win16") || has("win32")   || has("win64")    || has("win95")
+let s:UNIX  = has("unix")  || has("macunix") || has("win32unix")
+
+"" The following variables are unused at this time.
+
+
+
+"     " The following few lines will allow out-of-source-builds; Essentially, we
+"     " search the directory structure for a `BIN' folder and then a
+"     " `BIN\Makefile' to direct `makeprg' where to call our compiler.
+"         let $BINDIR = s:Directory_matcher()
+"         cd $BINDIR
+"         " look for a folder bin up and down to set the current directory there
+"         " (for calling make).
+"         " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
+"         " for the makeprg setting below
+"         set makeprg=make\ -f\ $MAKEFILE
+"" let s:CFlags                      = '-Wall -g -O0 -c'           " C compiler flags: compile, don't optimize
+"" let s:LFlags                      = '-Wall -g -O0'              " C compiler flags: link   , don't optimize
+"" let s:Libs                        = '-lm'                       " C libraries to use
+"" "
+"" let s:CplusCFlags                 = '-Wall -g -O0 -c'           " C++ compiler flags: compile, don't optimize
+"" let s:CplusLFlags                 = '-Wall -g -O0'              " C++ compiler flags: link   , don't optimize
+"" let s:CplusLibs                   = '-lm'                       " C++ libraries to use
+"" let s:CExtension                  = 'c'                         " C file extension; everything else is C++
+"" "
+"" let s:SourceCodeExtensions        = 'c cc cp cxx cpp CPP c++ C i ii'
+"
+"------------------------------------------------------------------------------
+
+
 function! SetCppCodingStyle()     "{{{
-    let pathfn = expand( '%:p:h' )
+    let pathfn = expand(getcwd())
     "the path for the file
     "
     " Don't include these in filename completions
@@ -123,21 +156,9 @@ function! SetCppCodingStyle()     "{{{
     set incsearch
     " call AddQtSyntax()
     " call UpdateMocFiles()
-    "
+
     set efm=%f:%l:\ %m,In\ file\ included\ from\ %f:%l:,\^I\^Ifrom\ %f:%l%m
     " Set the error format for the Mingw compiler
-
-    " The following few lines will allow out-of-source-builds; Essentially, we
-    " search the directory structure for a `BIN' folder and then a
-    " `BIN\Makefile' to direct `makeprg' where to call our compiler.
-        let $BINDIR = Directory_matcher()
-        cd $BINDIR
-        " look for a folder bin up and down to set the current directory there
-        " (for calling make).
-        let $MAKEFILE = findfile($BINDIR . "/Makefile", ".;")
-        " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
-        " for the makeprg setting below
-        set makeprg=make\ -f\ $MAKEFILE
 
     if &syntax == 'cmake'
         call SmartParensOff()
@@ -207,6 +228,7 @@ function! s:NormalMappings()         "{{{
 
     " Call AlignAssignments() for the current block of code.
     nmap <silent>  ;=  :call AlignAssignments()<CR>
+    nmap <F11> :call Make()<CR>
 endfunction     "}}}
 
 function! s:InsertMappings()     "{{{
@@ -214,7 +236,7 @@ function! s:InsertMappings()     "{{{
     " Insert mode mappings
     " ===========================================================================
     " Project or standard C++/Java/PHP comment block
-    imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'width':73})<CR>
+    imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'-', 'width':73})<CR>
 endfunction         "}}}
 
 function! s:InsertAbbreviations()        "{{{
@@ -258,7 +280,7 @@ function! SmartElse()     "{{{
     return prefix . "else\<Right>"
 endfunction "}}}
 
-function! CreateMatchLine()     "{{{
+function! s:CreateMatchLine()     "{{{
     let linenum = line( '.' )
     let current_line = getline( linenum )
     " don't do magic if the cursor isn't at the end of the line or if it's
@@ -356,7 +378,7 @@ function! SmartLineBreak()     "{{{
     if synIDattr(synID(line("."), col("."), 1), "name") == 'cComment' "inside a /* */ comment at the point where the line break occurs
         return
     endif
-    let match_line = CreateMatchLine()
+    let match_line = s:CreateMatchLine()
     if match_line == ''
         return
     endif
@@ -550,13 +572,13 @@ function! SwitchHeaderImpl()     "{{{
         let list = substitute( list, "[^\n]*", '', '' )
         let list = substitute( list, "^\n", '', '' )
         if ( ( fn =~ headers || fn =~ privateheaders ) && file =~ impl ) || ( fn =~ impl && file =~ headers )
-            call AskToSave()
+            call s:AskToSave()
             execute( "edit " . file )
             return
         endif
     endwhile
     if ( fn =~ headers )
-        call AskToSave()
+        call s:AskToSave()
         if exists( "$implextension" )
             let file = substitute( fn, headers, '.' . $implextension, '' )
         else
@@ -572,7 +594,7 @@ function! SwitchHeaderImpl()     "{{{
         execute( "set et" )
         execute( "set tw=100" )
     elseif fn =~ impl
-        call AskToSave()
+        call s:AskToSave()
         let file = substitute( fn, impl, '.h', '' )
         execute( "edit ".file )
     endif
@@ -598,13 +620,13 @@ function! SwitchPrivateHeaderImpl()     "{{{
         let list = substitute( list, "[^\n]*", '', '' )
         let list = substitute( list, "^\n", '', '' )
         if ( fn =~ privateheaders && file =~ impl ) || ( fn =~ impl && file =~ privateheaders ) || ( fn =~ headers && file =~ privateheaders )
-            call AskToSave()
+            call s:AskToSave()
             execute( "edit " . file )
             return
         endif
     endwhile
     if ( fn =~ privateheaders )
-        call AskToSave()
+        call s:AskToSave()
         if exists( "$implextension" )
             let file = substitute( fn, privateheaders, '.' . $implextension, '' )
         else
@@ -626,7 +648,7 @@ function! SwitchPrivateHeaderImpl()     "{{{
     endif
 endfunction "}}}
 
-function! AskToSave()     "{{{
+function! s:AskToSave()     "{{{
     if &modified
         let yesorno = input("Save changes before switching file? [Y/n]")
         if yesorno == 'y' || yesorno == '' || yesorno == 'Y'
@@ -639,18 +661,18 @@ function! AskToSave()     "{{{
     return 1
 endfunction "}}}
 
-function! CreatePrivateHeader( privateHeader )"{{{
+function! CreatePrivateHeader( privateHeader )      "{{{
     let privateheaders = '_p\.\([hH]\|hpp\|hxx\)$'
     let headers = '\.\([hH]\|hpp\|hxx\)$'
     let impl = '\.\([cC]\|cpp\|cc\|cxx\)$'
     let fn = expand( '%' )
     if fn =~ headers
-        let className = ClassNameFromHeader()
+        let className = s:ClassNameFromHeader()
     elseif fn =~ impl
-        let className = ClassNameFromImpl()
+        let className = s:ClassNameFromImpl()
     endif
 
-    if AskToSave() && fn =~ headers
+    if s:AskToSave() && fn =~ headers
         :normal gg
         " check whether a Q_DECLARE_PRIVATE is needed
         let dp = search( '\(^\|\s\+\)Q_DECLARE_PRIVATE\s*(\s*'.className.'\s*)' )
@@ -676,23 +698,17 @@ function! CreatePrivateHeader( privateHeader )"{{{
     let @h = header
     let @p = privateClassName
     let @c = className
-    :normal Gkko
-#include "h"
-
-class p
-Q_DECLARE_PUBLIC(c)
-protected:
-c *q_ptr;
+    :normal Gkko#include "h"class pQ_DECLARE_PUBLIC(c)protected:c *q_ptr;
 endfunction "}}}
 
-function! ClassNameFromHeader()     "{{{
+function! s:ClassNameFromHeader()     "{{{
     :normal gg
     call search( '^\s*class\s\+\([A-Za-z0-9]\+_EXPORT\s\+\)\?[A-Za-z_]\+\s*\(:\s*[,\t A-Za-z_]\+\)\?\s*\n\?\s*{' )
     "\zs and \ze mark start and end of the matching
     return matchstr( getline('.'), '\s\+\zs\w\+\ze\s*\(:\|{\|$\)' )
 endfunction "}}}
 
-function! ClassNameFromImpl()     "{{{
+function! s:ClassNameFromImpl()     "{{{
     :normal gg
     call search( '\s*\([A-Za-z_]\+\)::\1\s*(' )
     :normal "cye
@@ -712,6 +728,7 @@ function! LicenseHeader( license )      "{{{
     " let filename = $HOME . "/" . a:license . "HEADER"
     " execute ":0r " . filename
 "   call append( 0, system( "cat " . filename ) )
+"
     let license = s:BSDLicense()
     call append( 0, license)
 endfunction "}}}
@@ -728,7 +745,7 @@ function! SmartInclude()     "{{{
 endfunction "}}}
 
 " TODO: Rewite this fuction using dictionaries.
-function! MapIdentHeader( ident )       "{{{
+function! s:MapIdentHeader( ident )       "{{{
     let header = tolower(substitute(a:ident, '::', '/', 'g')).'.h'
     if a:ident =~ 'Private$'
         let header = substitute(header, 'private', '_p', '')
@@ -940,7 +957,7 @@ function! AddHeader()     "{{{
 "        let end = matchend( s, '[A-Za-z0-9_]\+', i )
 "    endif
     let ident = strpart( s, start, end - start )
-    let header = MapIdentHeader(ident)
+    let header = s:MapIdentHeader(ident)
     let include = '#include '.header
 
     let line = 1
@@ -1155,7 +1172,7 @@ endfunction "}}}
 ""     endif
 "" endfunction "}}}
 
-function! Directory_matcher()       "{{{
+function! s:Directory_matcher()       "{{{
     "List of troublesome words...
     let s:directories = [
                 \ "bin",  "build",
@@ -1244,14 +1261,49 @@ endfunction "}}}
 
 function! CommentBlock(comment, opt)        "{{{
     " Unpack optional arguments...
-    let introducer = get(a:opt, 'intro', '/// '               )
+    let introducer = get(a:opt, 'intro', '//'                 )
     let box_char   = get(a:opt, 'box',   '*'                  )
-    let width      = get(a:opt, 'width', strlen(a:comment) + 2)" Build the comment box and put the comment inside it...
-    return introducer . repeat(box_char,width) . "\<CR>"
-    \    . "/" . " " . a:comment        . "\<CR>"
-    \    . "/" . " \\brief:" . "\<CR>"
-    \    . "/" . "\<CR>"
-    \    . "/" . " " . repeat(box_char,width) . "\<CR>"
+    let width      = get(a:opt, 'width', strlen(a:comment) + 2) " Build the comment box and put the comment inside it...
+
+    " get the current line
+    let s:LineNumber = line('.')
+
+    " Create the top ruler
+    let s:TempString = introducer . repeat(box_char,width)
+    call setline(s:LineNumber,s:TempString)
+
+    " Fill in the comment block with text
+    let s:LineNumber = s:LineNumber + 1
+    let s:TempString = introducer . " " . a:comment
+    call setline(s:LineNumber,s:TempString)
+
+    " Blank line
+    let s:LineNumber = s:LineNumber + 1
+    let s:TempString = introducer 
+    call setline(s:LineNumber,s:TempString)
+
+    "" let s:LineNumber = s:LineNumber + 1
+    "" let s:TempString = introducer . " DESCRIPTION:"
+    "" call setline(s:LineNumber,s:TempString)
+
+    "" " Blank line
+    "" let s:LineNumber = s:LineNumber + 1
+    "" let s:TempString = introducer 
+    "" call setline(s:LineNumber,s:TempString)
+
+    let s:LineNumber = s:LineNumber + 1
+    let s:TempString = introducer . " ARGS:"
+    call setline(s:LineNumber,s:TempString)
+
+    " Create the bottom ruler
+    let s:LineNumber = s:LineNumber + 1
+    let s:TempString = introducer . repeat(box_char,width)
+    call setline(s:LineNumber,s:TempString)
+    return ""
+    
+    " execute "normal" 
+    " <HOME>x<Down><Down><Down><Down><Down><Insert><End>"
+ 
 endfunction     "}}}
 
 " Implement smart completion magic...
@@ -1298,7 +1350,7 @@ endfunction     "}}}
 
 " Table of completion specifications (a list of lists)...
 let s:completions = []
-function! AddCompletion (left, right, completion, restore)
+function! s:AddCompletion (left, right, completion, restore)
     " Function to add user-defined completions...
     call insert(s:completions, [a:left, a:right, a:completion, a:restore])
 endfunction
@@ -1306,19 +1358,55 @@ let s:NONE = ""
 " Table of completions...
 "                    Left           Right       Complete with...            Restore
 "                    =====          =======     ====================        =======
-call AddCompletion(  '{',           s:NONE,     "}",                        1   )
-call AddCompletion(  '{',           '}',        "\<CR>\<C-D>\<ESC>O",       0   )
-call AddCompletion(  '\[ ',         s:NONE,     " ]",                       1   )
-call AddCompletion(  '\[ ',         ' \]',       "\<CR>\<ESC>O\<TAB>",      0   )
-call AddCompletion(  '( ',          s:NONE,     " )",                       1   )
-call AddCompletion(  '( ',          ')',        "\<CR>\<ESC>O\<TAB>",       0   )
-call AddCompletion(  '<',           s:NONE,     ">",                        1   )
-call AddCompletion(  '<',           '>',        "\<CR>\<ESC>O\<TAB>",       0   )
-call AddCompletion(  '"',           s:NONE,     '"',                        1   )
-call AddCompletion(  '"',           '"',        "\\n",                      1   )
-call AddCompletion(  "'",           s:NONE,     "'",                        1   )
-call AddCompletion(  "'",           "'",        s:NONE,                     0   )
-call AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1   )
+call s:AddCompletion(  '{',           s:NONE,     "}",                        1   )
+call s:AddCompletion(  '{',           '}',        "\<CR>\<C-D>\<ESC>O",       0   )
+call s:AddCompletion(  '\[ ',         s:NONE,     " ]",                       1   )
+call s:AddCompletion(  '\[ ',         ' \]',       "\<CR>\<ESC>O\<TAB>",      0   )
+call s:AddCompletion(  '( ',          s:NONE,     " )",                       1   )
+call s:AddCompletion(  '( ',          ')',        "\<CR>\<ESC>O\<TAB>",       0   )
+call s:AddCompletion(  '<',           s:NONE,     ">",                        1   )
+call s:AddCompletion(  '<',           '>',        "\<CR>\<ESC>O\<TAB>",       0   )
+call s:AddCompletion(  '"',           s:NONE,     '"',                        1   )
+call s:AddCompletion(  '"',           '"',        "\\n",                      1   )
+call s:AddCompletion(  "'",           s:NONE,     "'",                        1   )
+call s:AddCompletion(  "'",           "'",        s:NONE,                     0   )
+call s:AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1   )
+
+function! s:MakeSetup()     "{{{
+    let s:MakeProgram             = 'make'
+    let s:MakeCmdLineArgs         = ''
+    if s:MSWIN
+        let s:BinaryExtension     = '.exe'
+        let s:MakeProgram         = s:MakeProgram . s:BinaryExtension
+    endif
+    let s:BinDirectory =s:Directory_matcher()
+    if s:MSWIN
+        let s:MakefileLocation = findfile(s:BinDirectory . "\\Makefile", ".;")
+    elseif
+        let s:MakefileLocation = findfile(s:BinDirectory . "/Makefile", ".;")
+    endif
+
+    let s:makestring = s:MakeProgram . ' -f "' . s:MakefileLocation . '" ' .s:MakeCmdLineArgs
+    let &makeprg=s:makestring
+endfunction     "}}}
+
+function! Make()        "{{{
+    call s:MakeSetup()
+    let s:FileLocation=getcwd()
+    " close the issues window
+    exe	":cclose"
+    " update : write source file if necessary
+    exe	":update"
+    if s:MakefileLocation == ''
+        exe	":make " . s:MakeCmdLineArgs
+    else
+        exe "cd " . expand(s:BinDirectory)
+        exe ":make"
+        exe "cd " . expand(s:FileLocation)
+    endif
+    " open the issues window
+    exe	":botright cwindow"
+endfunction     "}}}
 
 " ================================
 " Autogroup settings.
@@ -1328,6 +1416,7 @@ augroup CPPProgramming
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp filetype indent on
     " automatic indenting is required for SmartLineBreak to work correctly
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call SetCppCodingStyle()
+    autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp call s:MakeSetup()
 augroup END
 
 " vim: sw=4 sts=4 et
