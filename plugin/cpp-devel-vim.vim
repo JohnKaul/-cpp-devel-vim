@@ -90,37 +90,8 @@
 " endif
 
 "------------------------------------------------------------------------------
-"
 let s:MSWIN = has("win16") || has("win32")   || has("win64")    || has("win95")
 let s:UNIX  = has("unix")  || has("macunix") || has("win32unix")
-
-"" The following variables are unused at this time.
-
-
-
-"     " The following few lines will allow out-of-source-builds; Essentially, we
-"     " search the directory structure for a `BIN' folder and then a
-"     " `BIN\Makefile' to direct `makeprg' where to call our compiler.
-"         let $BINDIR = s:Directory_matcher()
-"         cd $BINDIR
-"         " look for a folder bin up and down to set the current directory there
-"         " (for calling make).
-"         " Look for a folder $BINDIR\Makefile up and down in the current locaion; used
-"         " for the makeprg setting below
-"         set makeprg=make\ -f\ $MAKEFILE
-"" let s:CFlags                      = '-Wall -g -O0 -c'           " C compiler flags: compile, don't optimize
-"" let s:LFlags                      = '-Wall -g -O0'              " C compiler flags: link   , don't optimize
-"" let s:Libs                        = '-lm'                       " C libraries to use
-"" "
-"" let s:CplusCFlags                 = '-Wall -g -O0 -c'           " C++ compiler flags: compile, don't optimize
-"" let s:CplusLFlags                 = '-Wall -g -O0'              " C++ compiler flags: link   , don't optimize
-"" let s:CplusLibs                   = '-lm'                       " C++ libraries to use
-"" let s:CExtension                  = 'c'                         " C file extension; everything else is C++
-"" "
-"" let s:SourceCodeExtensions        = 'c cc cp cxx cpp CPP c++ C i ii'
-"
-"------------------------------------------------------------------------------
-
 
 function! SetCppCodingStyle()     "{{{
     let pathfn = expand(getcwd())
@@ -1179,7 +1150,6 @@ function! s:Directory_matcher()       "{{{
                 \ "binary",  "Development",
                 \ "Debug",  "release"
                 \ ]
-
     for $dir in s:directories
         if finddir($dir, ",;") != ""
             return finddir($dir, ".;")
@@ -1379,7 +1349,13 @@ function! s:MakeSetup()     "{{{
         let s:BinaryExtension     = '.exe'
         let s:MakeProgram         = s:MakeProgram . s:BinaryExtension
     endif
+    let DirectoriesToSearch = [
+                               \ "bin",  "build",
+                               \ "binary",  "Development",
+                               \ "Debug",  "release"
+                               \ ]
     let s:BinDirectory =s:Directory_matcher()
+
     if s:MSWIN
         let s:MakefileLocation = findfile(s:BinDirectory . "\\Makefile", ".;")
     elseif
