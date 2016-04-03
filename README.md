@@ -6,7 +6,7 @@ This Vim script _(adopted from `kde-devel-vim`)_ will become a more generic C++ 
 *  Automatic space between keyword and paren addition.
 *  Quick switching between header and impl file.
 *  Intelligent includes additions. _EG: Automatic `#include <string.h>` statement when cursor is on `std::string` statement._
-*  Ability to add "standard" (ment to be overridden for personal,project
+*  Ability to add "standard" (to be overridden for personal or project
    stds) comment headers.
 *  Change and TODO log entry helpers.
 *  (un)comment line toggle. _This feature also works with visual selection as well._
@@ -14,6 +14,11 @@ This Vim script _(adopted from `kde-devel-vim`)_ will become a more generic C++ 
    in the use of CMAKE.
 *  Generic tab completion for braces, parenthesis and quotes. _This feature is only meant for convinces, please use a mechanism like "SnipMate" for better tab completion._
 *  Ability to align assignments in surrounding statements.
+*  Automatic tagfile write for better project source code navigation.
+*  Automatic 'path' setting for 'gf' command navigation.
+*  Custom 'Make()' function/command to support better
+   out-of-source-building; this should build the project from any source
+   code file in the project.
 
 ### How do I get set up? ###
 If you don't have a preferred installation method, I recommend installing [pathogen.vim](https://github.com/tpope/vim-pathogen), and then simply copy and paste:
