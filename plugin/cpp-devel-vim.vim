@@ -49,6 +49,8 @@
 "       ~ This feature is only meant for convinces, please use a mechanism
 "         like "SnipMate" for better tab completion.
 " o  Ability to align assignments in surrounding statements.
+" o  Automatic tagfile write for better project source code navigation.
+" o  Automatic 'path' setting for 'gf' command navigation.
 "
 " EXAMPLES:
 " When adding a WHILE--or IF, FOR, etc--statement, braces at the end of the line will be
@@ -91,35 +93,50 @@
 
 "------------------------------------------------------------------------------
 let s:MSWIN = has("win16") || has("win32")   || has("win64")    || has("win95")
-let s:UNIX  = has("unix")  || has("macunix") || has("win32unix")
+let s:UNIX  = has("unix")  || has("macunix") || has("win32unix") || has(0) || 1
 
 function! SetCppCodingStyle()     "{{{
-    let pathfn = expand(getcwd())
-    "the path for the file
-    "
     " Don't include these in filename completions
     set suffixes+=.lo,.o,.moc,.la,.closure,.loT
 
-    " Search for headers here
+    "--------------------------------------------------------------
+    " Path Stuff
+    exe "cd %:p:h"
+    "the path for the file
 
-    let DirectoriesToSearch = [ "src",  "source" ]
-    let s:SrcDirectory =s:Directory_matcher(DirectoriesToSearch)
+    let DirectoriesToSearch = [ 'bin',  'build',
+                              \ 'binary',  'Development',
+                              \ 'Debug',  'release'
+                              \ ]
+    let s:BinDirectory =s:Directory_Matcher(DirectoriesToSearch, ['.;'])
+    let s:AssumedProjectRoot = s:BinDirectory . '/../'
+    " Search for the binary directory and assume it is at the project root.
+    " This is to set the `path' variable so `gf' works.
 
-    let DirectoriesToSearch = [ "inc",  "include" ]
-    let s:IncDirectory =s:Directory_matcher(DirectoriesToSearch)
+    if !s:MSWIN
+        " Do not include extra (Unix) paths when on windows.
+        let s:TypicalUnixIncludeDirectories = '/usr/include,/usr/local/include,'
+        let &path = s:TypicalUnixIncludeDirectories . s:AssumedProjectRoot . '**4/'
+        " Allow `path' to search 4 levels deep.
+    else
+        let &path = s:AssumedProjectRoot . '**4/'
+        " Allow `path' to search 4 levels deep.
+    endif
+    " let s:FileLocation = s:AssumedProjectRoot
+    " End Path Stuff
+    "--------------------------------------------------------------
 
-    let DirectoriesToSearch = [ "lib",  "library", "libs", "libraries" ]
-    let s:LibDirectory =s:Directory_matcher(DirectoriesToSearch)
-
-    let s:SrcDirectory =expand(s:SrcDirectory)
-    let s:IncDirectory =expand(s:IncDirectory)
-    let s:LibDirectory =expand(s:LibDirectory)
-
-    " set path='.,/usr/include,/usr/local/include,' 
-    " set path+=,
-
-    let &path = '.,/usr/include,/usr/local/include,' . s:SrcDirectory . ',' . s:IncDirectory . ',' . s:LibDirectory
-
+    "=============================================================================
+    "                            ~ W A R N I N G ~
+    "=============================================================================
+    " The following section is a command override
+    "-----------------------------------------------------------------------------
+    :command -nargs=0 Make :call Make()
+    " Create a command for the Make() function.
+    :cabbrev make <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Make' : 'make')<CR>
+    " Overirde the `make' command to use ours instead.
+    echohl WarningMsg | echo "WARNING: 'make' command overridden to custom 'Make()' function." | echohl None
+    "-----------------------------------------------------------------------------
 
     call s:INOREMappings()
     call s:NormalVisualMappings()
@@ -216,7 +233,7 @@ function! s:NormalMappings()         "{{{
 
     " Call AlignAssignments() for the current block of code.
     nmap <silent>  ;=  :call AlignAssignments()<CR>
-    nmap <F11> :call Make()<CR>
+    nmap make :call Make()<CR>
 endfunction     "}}}
 
 function! s:InsertMappings()     "{{{
@@ -1160,15 +1177,16 @@ endfunction "}}}
 ""     endif
 "" endfunction "}}}
 
-function! s:Directory_matcher(directories)       "{{{
+function! s:Directory_Matcher(directories, path)       "{{{
     "List of troublesome words...
     " let s:directories = [
     "             \ "bin",  "build",
     "             \ "binary",  "Development",
     "             \ "Debug",  "release"
     "             \ ]
+    let s:path = get(a:path, 'path', ['.;'])
     for $dir in a:directories
-        if finddir($dir, ",;") != ""
+        if finddir($dir, s:path) != ""
             return finddir($dir, ".;")
         endif
     endfor
@@ -1266,7 +1284,7 @@ function! CommentBlock(comment, opt)        "{{{
 
     " Blank line
     let s:LineNumber = s:LineNumber + 1
-    let s:TempString = introducer 
+    let s:TempString = introducer
     call setline(s:LineNumber,s:TempString)
 
     "" let s:LineNumber = s:LineNumber + 1
@@ -1275,7 +1293,7 @@ function! CommentBlock(comment, opt)        "{{{
 
     "" " Blank line
     "" let s:LineNumber = s:LineNumber + 1
-    "" let s:TempString = introducer 
+    "" let s:TempString = introducer
     "" call setline(s:LineNumber,s:TempString)
 
     let s:LineNumber = s:LineNumber + 1
@@ -1287,10 +1305,10 @@ function! CommentBlock(comment, opt)        "{{{
     let s:TempString = introducer . repeat(box_char,width)
     call setline(s:LineNumber,s:TempString)
     return ""
-    
-    " execute "normal" 
+
+    " execute "normal"
     " <HOME>x<Down><Down><Down><Down><Down><Insert><End>"
- 
+
 endfunction     "}}}
 
 " Implement smart completion magic...
@@ -1359,32 +1377,27 @@ call s:AddCompletion(  "'",           s:NONE,     "'",                        1 
 call s:AddCompletion(  "'",           "'",        s:NONE,                     0   )
 call s:AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1   )
 
-function! s:MakeSetup()     "{{{
+function! MakeSetup()     "{{{
     let s:MakeProgram             = 'make'
     let s:MakeCmdLineArgs         = ''
     if s:MSWIN
         let s:BinaryExtension     = '.exe'
         let s:MakeProgram         = s:MakeProgram . s:BinaryExtension
     endif
-    let DirectoriesToSearch = [
-                               \ "bin",  "build",
-                               \ "binary",  "Development",
-                               \ "Debug",  "release"
-                               \ ]
-    let s:BinDirectory =s:Directory_matcher(DirectoriesToSearch)
 
     if s:MSWIN
         let s:MakefileLocation = findfile(s:BinDirectory . "\\Makefile", ".;")
-    elseif
-        let s:MakefileLocation = findfile(s:BinDirectory . "/Makefile", ".;")
+    else
+        let s:MakefileLocation = findfile(s:BinDirectory . '/Makefile', ".;")
     endif
 
-    let s:makestring = s:MakeProgram . ' -f "' . s:MakefileLocation . '" ' .s:MakeCmdLineArgs
-    let &makeprg=s:makestring
+    let s:MakeProgString = s:MakeProgram . ' -f "' . s:MakefileLocation . '" ' .s:MakeCmdLineArgs
+    let &makeprg=s:MakeProgString
 endfunction     "}}}
 
 function! Make()        "{{{
-    call s:MakeSetup()
+    call MakeSetup()
+
     let s:FileLocation=getcwd()
     " close the issues window
     exe	":cclose"
@@ -1401,6 +1414,14 @@ function! Make()        "{{{
     exe	":botright cwindow"
 endfunction     "}}}
 
+function! s:CtagsWrite( path )   "{{{
+    let s:PathToRunCtagsFrom = get(a:path, 'path', ['.'])
+    let s:FileLocation=getcwd()
+    exe "cd " . s:PathToRunCtagsFrom
+    exe "!ctags -R " . s:AssumedProjectRoot
+    exe "cd " . expand(s:FileLocation)
+endfunction "}}}
+
 " ================================
 " Autogroup settings.
 " ================================
@@ -1409,7 +1430,9 @@ augroup CPPProgramming
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp filetype indent on
     " automatic indenting is required for SmartLineBreak to work correctly
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call SetCppCodingStyle()
-    autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp call s:MakeSetup()
+    autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp call MakeSetup()
+    " autocmd BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call s:CtagsWrite( )
+    autocmd BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call s:CtagsWrite([s:AssumedProjectRoot])
 augroup END
 
 " vim: sw=4 sts=4 et
