@@ -95,6 +95,18 @@
 let s:MSWIN = has("win16") || has("win32")   || has("win64")    || has("win95")
 let s:UNIX  = has("unix")  || has("macunix") || has("win32unix") || has(0) || 1
 
+let s:MakeProgram             = 'make'
+let s:MakeCmdLineArgs         = ''
+let s:MakefileName            = 'Makefile'
+
+let s:BuildDirectoriesToSearch = [ 'bin',
+                                 \ 'build',
+                                 \ 'binary',
+                                 \ 'Development',
+                                 \ 'Debug',
+                                 \ 'Release'
+                                 \ ]
+
 function! SetCppCodingStyle()     "{{{
     " Don't include these in filename completions
     set suffixes+=.lo,.o,.moc,.la,.closure,.loT
@@ -103,15 +115,18 @@ function! SetCppCodingStyle()     "{{{
     " Path Stuff
     exe "cd %:p:h"
     "the path for the file
+    let s:FileLocation=fnamemodify(expand(getcwd()), ':p')
 
-    let DirectoriesToSearch = [ 'bin',  'build',
-                              \ 'binary',  'Development',
-                              \ 'Debug',  'release'
-                              \ ]
-    let s:BinDirectory =s:Directory_Matcher(DirectoriesToSearch, ['.;'])
-    let s:AssumedProjectRoot = s:BinDirectory . '/../'
+    let s:BinDirectory = s:Directory_Matcher(s:BuildDirectoriesToSearch, ['.;'])
+    if s:MSWIN
+        let s:AssumedProjectRoot = s:BinDirectory . '..\'
+    else
+        let s:AssumedProjectRoot = s:BinDirectory . '../'
+    endif
     " Search for the binary directory and assume it is at the project root.
     " This is to set the `path' variable so `gf' works.
+    "
+    let &tags = fnamemodify(findfile(s:AssumedProjectRoot . 'tags', ".;"), ':p')
 
     if !s:MSWIN
         " Do not include extra (Unix) paths when on windows.
@@ -119,10 +134,9 @@ function! SetCppCodingStyle()     "{{{
         let &path = s:TypicalUnixIncludeDirectories . s:AssumedProjectRoot . '**4/'
         " Allow `path' to search 4 levels deep.
     else
-        let &path = s:AssumedProjectRoot . '**4/'
+        let &path = s:AssumedProjectRoot . '**4\'
         " Allow `path' to search 4 levels deep.
     endif
-    " let s:FileLocation = s:AssumedProjectRoot
     " End Path Stuff
     "--------------------------------------------------------------
 
@@ -131,11 +145,11 @@ function! SetCppCodingStyle()     "{{{
     "=============================================================================
     " The following section is a command override
     "-----------------------------------------------------------------------------
-    :command -nargs=0 Make :call Make()
+    :command! -nargs=0 Make :call Make()
     " Create a command for the Make() function.
     :cabbrev make <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Make' : 'make')<CR>
     " Overirde the `make' command to use ours instead.
-    echohl WarningMsg | echo "WARNING: 'make' command overridden to custom 'Make()' function." | echohl None
+"    echohl WarningMsg | echo "WARNING: 'make' command overridden to custom 'Make()' function." | echohl None
     "-----------------------------------------------------------------------------
 
     call s:INOREMappings()
@@ -1178,16 +1192,11 @@ endfunction "}}}
 "" endfunction "}}}
 
 function! s:Directory_Matcher(directories, path)       "{{{
-    "List of troublesome words...
-    " let s:directories = [
-    "             \ "bin",  "build",
-    "             \ "binary",  "Development",
-    "             \ "Debug",  "release"
-    "             \ ]
     let s:path = get(a:path, 'path', ['.;'])
     for $dir in a:directories
         if finddir($dir, s:path) != ""
-            return finddir($dir, ".;")
+            " return expand(finddir($dir, ".;"))
+            return fnamemodify(expand(finddir($dir, ".;")), ':p')
         endif
     endfor
     return "."
@@ -1378,17 +1387,15 @@ call s:AddCompletion(  "'",           "'",        s:NONE,                     0 
 call s:AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1   )
 
 function! MakeSetup()     "{{{
-    let s:MakeProgram             = 'make'
-    let s:MakeCmdLineArgs         = ''
-    if s:MSWIN
-        let s:BinaryExtension     = '.exe'
-        let s:MakeProgram         = s:MakeProgram . s:BinaryExtension
-    endif
+    " if s:MSWIN
+    "     let s:BinaryExtension     = '.exe'
+    "     let s:MakeProgram         = s:MakeProgram . s:BinaryExtension
+    " endif
 
     if s:MSWIN
-        let s:MakefileLocation = findfile(s:BinDirectory . "\\Makefile", ".;")
+        let s:MakefileLocation = findfile(s:BinDirectory . s:MakefileName, ".;")
     else
-        let s:MakefileLocation = findfile(s:BinDirectory . '/Makefile', ".;")
+        let s:MakefileLocation = findfile(s:BinDirectory . '/' . sMakefileName, ".;")
     endif
 
     let s:MakeProgString = s:MakeProgram . ' -f "' . s:MakefileLocation . '" ' .s:MakeCmdLineArgs
@@ -1398,7 +1405,6 @@ endfunction     "}}}
 function! Make()        "{{{
     call MakeSetup()
 
-    let s:FileLocation=getcwd()
     " close the issues window
     exe	":cclose"
     " update : write source file if necessary
@@ -1406,9 +1412,9 @@ function! Make()        "{{{
     if s:MakefileLocation == ''
         exe	":make " . s:MakeCmdLineArgs
     else
-        exe "cd " . expand(s:BinDirectory)
+        exe "cd " . s:BinDirectory
         exe ":make"
-        exe "cd " . expand(s:FileLocation)
+        exe "cd " . s:FileLocation
     endif
     " open the issues window
     exe	":botright cwindow"
@@ -1416,10 +1422,10 @@ endfunction     "}}}
 
 function! s:CtagsWrite( path )   "{{{
     let s:PathToRunCtagsFrom = get(a:path, 'path', ['.'])
-    let s:FileLocation=getcwd()
     exe "cd " . s:PathToRunCtagsFrom
-    exe "!ctags -R " . s:AssumedProjectRoot
-    exe "cd " . expand(s:FileLocation)
+    let s:FileLocation=fnamemodify(expand(getcwd()), ':p')
+    exe "!ctags -R --exclude=bin --exclude=build --exclude=binary --exclude=Release --exclude=Debug --exclude=CMakeFiles " . s:AssumedProjectRoot . '*'
+    exe "cd " . s:FileLocation
 endfunction "}}}
 
 " ================================
@@ -1432,7 +1438,7 @@ augroup CPPProgramming
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call SetCppCodingStyle()
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp call MakeSetup()
     " autocmd BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call s:CtagsWrite( )
-    autocmd BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call s:CtagsWrite([s:AssumedProjectRoot])
+    autocmd BufWritePost *.c,*.cc,*.cpp,*.h,*.hpp call s:CtagsWrite([s:AssumedProjectRoot])
 augroup END
 
 " vim: sw=4 sts=4 et
