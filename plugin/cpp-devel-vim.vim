@@ -1395,7 +1395,7 @@ function! MakeSetup()     "{{{
     if s:MSWIN
         let s:MakefileLocation = findfile(s:BinDirectory . s:MakefileName, ".;")
     else
-        let s:MakefileLocation = findfile(s:BinDirectory . '/' . sMakefileName, ".;")
+        let s:MakefileLocation = findfile(s:BinDirectory . '/' . s:MakefileName, ".;")
     endif
 
     let s:MakeProgString = s:MakeProgram . ' -f "' . s:MakefileLocation . '" ' .s:MakeCmdLineArgs
