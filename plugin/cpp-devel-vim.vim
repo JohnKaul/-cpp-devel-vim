@@ -1,5 +1,5 @@
 " I found this vim script file on the KDE Tech Base website. The link
-" is below my comment but I will also include the descrition given in
+" is below this comment but I will also include the descrition given in
 " case the website goes down later.
 "
 " -- Begin Quote --"{{{
@@ -91,13 +91,34 @@
 " endif
 "}}}
 "------------------------------------------------------------------------------
+" The following tgries to determine what OS the end-user is using.
+" NOTE: Macs have a problem in that this (has(...)) doesn't work so I
+"       added the `` OR 1'' which should be true if the host OS isn't
+"       a Windows OS.
 let s:MSWIN = has("win16") || has("win32")   || has("win64")    || has("win95")
-let s:UNIX  = has("unix")  || has("macunix") || has("win32unix") || has(0) || 1
+let s:UNIX  = has("unix")  || has("macunix") || has("win32unix") || 1
 
+
+"------------------------------------------------------------------------------
+" Some `public' overrides for an enduser to change if they want.
 let s:MakeProgram             = 'make'
 let s:MakeCmdLineArgs         = ''
 let s:MakefileName            = 'Makefile'
 
+" `common' build directory names to search for; this will determine
+" `projectRoot'. Much of this script uses `projectRoot' so this is
+" these directories are essential to this scripts functionality.
+"
+" I imagine a drirectory structure like the following:
+"       ProjectName
+"             |
+"             +-- bin
+"             |
+"             +-- doc
+"             |
+"             +-- src
+"             |    |
+"              ...
 let s:BuildDirectoriesToSearch = [ 'bin',
                                  \ 'build',
                                  \ 'binary',
@@ -290,16 +311,14 @@ function! s:CreateCommands()                            "{{{
     "-----------------------------------------------------------------------------
     :command! -nargs=0 Make :call Make()
     " Create a command for the Make() function.
-    :cabbrev make <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Make'
-    : 'make')<CR>
+    :cabbrev make <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Make' : 'make')<CR>
     " Overirde the `make' command to use ours instead.  echohl
     " WarningMsg | echo "WARNING: 'make' command overridden to custom
     " 'Make()' function." | echohl None
     "-----------------------------------------------------------------------------
 
     " Create a command for creating a tags file at the project root.
-    :command! -nargs=0 MakeCtags :call
-    s:CtagsWrite([s:AssumedProjectRoot])
+    :command! -nargs=0 MakeCtags :call s:CtagsWrite([s:AssumedProjectRoot])
 
 endfunction     "}}}
 
@@ -601,7 +620,7 @@ endfunction "}}}
 " SpaceBetweenKeywordAndParens()
 " --------------------------------------------------------------------
 function! SpaceBetweenKeywordAndParens()                "{{{
-    if ! ( &syntax =~ '^\(c\|cpp\|java\)$' )
+    if ! ( &syntax =~ '^\(c\|cpp\)$' )
         return '('
     endif
     let s = strpart( getline( '.' ), 0, col( '.' ) - 1 )
@@ -1314,26 +1333,26 @@ endfunction "}}}
 
 " --------------------------------------------------------------------
 " AlignAssignments()
+" This function will align the assignments for the statements in a code
+" block.
+"
+" Example:
+"     applicants_name = 'Luke'
+"     mothers_maiden_name = 'Amidala'
+"     closest_relative = 'sister'
+"     fathers_occupation = 'Sith'
+"
+"     applicants_name     = 'Luke'
+"     mothers_maiden_name = 'Amidala'
+"     closest_relative    = 'sister'
+"     fathers_occupation  = 'Sith'
+"
+" Code for this function found here:
+" http://www.ibm.com/developerworks/linux/library/l-vim-script-2/index.html
+"
 " --------------------------------------------------------------------
 function! AlignAssignments ()                           "{{{
     "   Align Assignments:
-    "   This function will align the assignments for the statements in a code
-    "   block.
-    "
-    "   Example:
-    "     applicants_name = 'Luke'
-    "     mothers_maiden_name = 'Amidala'
-    "     closest_relative = 'sister'
-    "     fathers_occupation = 'Sith'
-    "
-    "     applicants_name     = 'Luke'
-    "     mothers_maiden_name = 'Amidala'
-    "     closest_relative    = 'sister'
-    "     fathers_occupation  = 'Sith'
-    "
-    "     Code for this function found here:
-    "     http://www.ibm.com/developerworks/linux/library/l-vim-script-2/index.html
-    "
 
     " Patterns needed to locate assignment operators...
     let ASSIGN_OP   = '[-+*/%|&]\?=\@<!=[=~]\@!'
@@ -1376,6 +1395,12 @@ endfunction     "}}}
 
 " --------------------------------------------------------------------
 " CommentLine()
+" Adds a comment marker to the beginning of the line(s). this function
+" works in visual mode as well -i.e. one can select several lines to
+" comment out.
+"
+" Code for this function found here:
+" http://www.ibm.com/developerworks/linux/library/l-vim-script-2/index.html
 " --------------------------------------------------------------------
 function! CommentLine()                                 "{{{
   if getline(".") =~ '//-x-   '
@@ -1443,10 +1468,15 @@ function! CommentBlock(comment, opt)                    "{{{
 endfunction     "}}}
 
 " --------------------------------------------------------------------
-"  SmartComplete()
-" Implement smart completion magic...
+" SmartComplete()
+" Implement simple smart completion magic. This function is not ment
+" to be a replacement for a more robust tool like `SnipMate'; this
+" tool is only ment to offer some help with braces.
+"
+" Code for this function found here:
+" http://www.ibm.com/developerworks/linux/library/l-vim-script-2/index.html
 " --------------------------------------------------------------------
-function! SmartComplete ()                              "{{{
+function! SmartComplete()                               "{{{
     " Remember where we parked...
     let cursorpos = getpos('.')
     let cursorcol = cursorpos[2]
@@ -1512,14 +1542,10 @@ call s:AddCompletion(  "'",           "'",        s:NONE,                     0 
 call s:AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1   )
 
 " --------------------------------------------------------------------
-"  MakeSetup()
+" MakeSetup()
+" Locate the makefile and set the makeprog string.
 " --------------------------------------------------------------------
 function! MakeSetup()                                   "{{{
-    " if s:MSWIN
-    "     let s:BinaryExtension     = '.exe'
-    "     let s:MakeProgram         = s:MakeProgram . s:BinaryExtension
-    " endif
-
     if s:MSWIN
         let s:MakefileLocation = findfile(s:BinDirectory . s:MakefileName, ".;")
     else
@@ -1532,6 +1558,10 @@ endfunction     "}}}
 
 " --------------------------------------------------------------------
 " Make()
+" Curstom Make() command in which the following happen:
+"   1. A CD to binary/makefile directory.
+"   2. Issue the make command.
+"   3. A CD back to end-users previous CD location.
 " --------------------------------------------------------------------
 function! Make()                                        "{{{
     call MakeSetup()
@@ -1573,7 +1603,6 @@ augroup CPPProgramming
     " automatic indenting is required for SmartLineBreak to work correctly
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call SetCppCodingStyle()
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp call MakeSetup()
-    " autocmd BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call s:CtagsWrite( )
     autocmd BufWritePost *.c,*.cc,*.cpp,*.h,*.hpp call s:CtagsWrite([s:AssumedProjectRoot])
 augroup END
 
