@@ -1,35 +1,44 @@
 *cpp-devel.txt*
-Last Updated: 03.30.16 2:55:54 PM
+Last Updated: 04.06.16 10:59:53 AM
 
 ==============================================================================
 CONTENTS                                                  *cpp-devel-contents*
 
-    1.Intro...................................|cpp-devel|
-    2.Functionality provided..................|cpp-devel-Functionality|
-        2.1 Global commands...................|cpp-devl-GlobalCommands|
-        2.2 Global functions..................|cpp-devel-GlobalFunctions|
-        2.3 Local functions...................|cpp-devel-LocalFunctions|
+    1.Intro........................................................|cpp-devel|
+    2.Functionality provided.........................|cpp-devel-Functionality|
+        2.1 Global mappings.........................|cpp-devel-GLobalMappings|
+                2.1.1 Insert mode mappings................|cpp-devel-inoremap|
+                2.1.2 Normal and Visual mapings................|cpp-devel-map|
+                2.1.3 Normal mappings.........................|cpp-devel-nmap|
+        2.2 Global commands.........................|cpp-devel-GlobalCommands|
+        2.3 Global functions........................|cpp-devel-GlobalFuctions|
+        2.4 Local fucntions.........................|cpp-devel-LocalFunctions|
 
-==============================================================================
+
+
+
+===-----------------------------------X------------------------------------===
 1. Intro                                                           *cpp-devel*
 
-What is the "cpp-devel" plugin? This plugin will help preform many
-"necessary" and/or "usefull" functions to help write C++ code.
+This plugin will help preform many useful functions to help write C/C++ code.
 
-==============================================================================
+
+
+===-----------------------------------X------------------------------------===
 2. Functionality provided                            *cpp-devel-Functionality*
 
 o  Automatic brace and parenthesis addition.
       ~ Intelligence added to place braces on same line as if,while,do,etc.
 o  Automatic space between keyword and paren addition.
+      ~ For the keywords: if/for/while/switch/foreach/forever add a space
+        between it and it's paren
 o  Quick switching between header and impl file.
 o  Intelligent includes additions.
       ~ EG: Automatic "#include <string.h>" statement when cursor is on
             "std::string" statement.
-o  Ability to add "standard" (ment to be overridden for personal,project
-   stds) comment headers.
-o  Change and TODO log entry helpers.
-o  (un)comment line toggle
+o  Ability to add "standard" comment headers.
+o  Changelog and TODO log entry helpers.
+o  Comment and Uncomment line(s) toggle
       ~ works with visual selection as well.
 o  Intelligent directory searching to enable "out-of-source-building", like
    in the use of CMAKE.
@@ -38,13 +47,53 @@ o  Generic tab completion for braces, parenthesis and quotes.
         like "SnipMate" for better tab completion.
 o  Ability to align assignments in surrounding statements.
 
+
+
 ===-----------------------------------X------------------------------------===
-2.1  Global Commands                                *cpp-devel-GlobalCommands*
+2.1  Global Mappings                                 *cpp-devel-GlobalMappings*
+
+2.1.1   Insert mode mappings                               *cpp-devel-inoremap*
+
+        <F5>........................................................|AddHeader|
+        <S-F5>.....................................................|AddForward|
+
+2.1.2   Normal and Visual mode mappings                         *cpp-devel-map*
+
+        <C-Bslash>................................................|CommentLine|
+
+2.1.3   Normal mode mappings                                    *cpp-devel-map*
+
+        Gf...................................................|SwitchHeaderImpl|
+        GF............................................|SwitchPrivateHeaderImpl|
+        ,#.......................................................|IncludeGuard|
+        ;=...................................................|AlignAssignments|
+
+
+
+===-----------------------------------X------------------------------------===
+2.2  Global Commands                                *cpp-devel-GlobalCommands*
+The following commands can be called from the Vim command line.
+
+------------------------------------------------------------------------------
 :make                                                                   *make*
+        An override to the built in make command.
+
+        This is essentially a small `wrapper' or `convenience extension' to
+        the built in |:make| command. This function will store the current
+        working directory, switch that working directory to the location of
+        the makefile, issue the |:make| command, and change the current
+        working directory back.
+
+See also |Directory_matcher|
+
+------------------------------------------------------------------------------
+:MakeCtags                                                         *MakeCtags*
+        A function to create a |tags| file in the project root.
+
 
 
 ===-----------------------------------X------------------------------------===
-2.2  Global Functions                              *cpp-devel-GlobalFunctions*
+2.3  Global Functions                              *cpp-devel-GlobalFunctions*
 
 ------------------------------------------------------------------------------
 SetCppCodingStyle()                                           *SetCodingStyle*
@@ -54,50 +103,118 @@ SetCppCodingStyle()                                           *SetCodingStyle*
 ------------------------------------------------------------------------------
 DisableSmartLineBreak()                                *DisableSmartLineBreak*
 
-See also
-
 ------------------------------------------------------------------------------
 EnableSmartLineBreak()                                  *EnableSmartLineBreak*
-
-See also
 
 ------------------------------------------------------------------------------
 SmartElse()                                                        *SmartElse*
 
-See also
-
 ------------------------------------------------------------------------------
 AddClosingBrace(current_line)                                *AddClosingBrace*
-
-See also
 
 ------------------------------------------------------------------------------
 AddClosingChar(current_line, ch)                              *AddClosingChar*
 
-See also
-
 ------------------------------------------------------------------------------
 SmartLineBreak()                                              *SmartLineBreak*
-
-See also
 
 ------------------------------------------------------------------------------
 SmartParensOn()                                                *SmartParensOn*
 
-See also
-
 ------------------------------------------------------------------------------
 SmartParensOff()                                              *SmartParensOff*
-
-See also
 
 ------------------------------------------------------------------------------
 SmartTab()                                                         *SmartTabs*
 
-See also
+------------------------------------------------------------------------------
+SmartParens( char, ... )                                         *SmartParens*
+        Adds the space before the '(' after the keywords if/for/while/switch.
 
 ------------------------------------------------------------------------------
-AddHeader()                                                       *:AddHeader*
+SpaceBetweenKeywordAndParens()                  *SpaceBetweenKeywordAndParens*
+        This function will add a space after the paren for the
+        following fuctions:
+                if, for, while, switch, foreach, forever
+        Example: >
+        if (test) ...
+        for (test) ...
+        ...
+<
+------------------------------------------------------------------------------
+SwitchHeaderImp()                                           *SwitchHeaderImpl*
+        Switch between a header and implementation file.
+        
+        The current shortcut follows the |gf| mnemonic "goto file". 
+
+        To remap: >
+        :nmap <silent> Gf :call SwitchHeaderImpl()<CR>
+<
+------------------------------------------------------------------------------
+SwitchPrivateHeaderImpl()                           *SwitchPrivateHeaderImpl*
+        Switch between a private header and implementation file.
+
+        The current shortcut follows the |gf| mnemonic "goto file". 
+
+        Given the example:
+        MyClass_p.h >
+                        // Header Guard Here
+                        class MyClassPrivate
+                        {
+                        public:
+                            int a;
+                            bool b;
+                            //more data members;
+                        }
+<
+        MyClass.h >
+                        // Header Guard Here
+                        class MyClassPrivate;
+                        class MyClass
+                        {
+                        public:
+                            MyClass();
+                            ~MyClass();
+                            void method1();
+                            int method2();
+                        private:
+                            MyClassPrivate* mData;
+                        }
+<
+        
+        MyClass.cpp >
+                        #include "MyClass.h"
+                        #include "MyClass_p.h"
+                        
+                        MyClass::MyClass()
+                        {
+                            mData = new MyClassPrivate();
+                        }
+                        
+                        MyClass::~MyClass()
+                        {
+                            delete mData;
+                        }
+                        
+                        void MyClass::method1()
+                        {
+                            //do stuff
+                        }
+                        
+                        int MyClass::method2()
+                        {
+                            return stuff;
+                        }
+<
+        
+        To remap: >
+        :nmap <silent> GF :call SwitchPrivateHeaderImpl()<CR>
+<
+
+See also |s:CreatePrivateHeader|
+
+------------------------------------------------------------------------------
+AddHeader()                                                        *AddHeader*
         Insert an #include statement for the current/last symbol.
 
         Example:
@@ -110,49 +227,21 @@ AddHeader()                                                       *:AddHeader*
         To remap: >
         :inoremap <F5> <C-O>:call AddHeader()<CR>
 <
-See also
-
 ------------------------------------------------------------------------------
-AddForward()                                                     *:AddForward*
-        This fuction will add a forward decl for the class the current
-        currser is on.
+AddForward()                                                      *AddForward*
+        This function will add a forward decl for the class the current
+        cursor is on.
 
         To remap: >
         :inoremap <S-F5> <C-O>:call AddForward()<CR>
 <
-See also
-
-
 ------------------------------------------------------------------------------
-SwitchHeaderImp()                                           *:SwitchHeaderImp*
-        Switch between a header and implementation file.
-
-        To remap: >
-        :nmap <silent> ,h :call SwitchHeaderImpl()<CR>
-<
-See also
-
-
-------------------------------------------------------------------------------
-SwitchPrivateHeaderImpl()                           *:SwitchPrivateHeaderImpl*
-        Switch between a private header and implementation file.
-
-        To remap: >
-        :nmap <silent> ,p :call SwitchPrivateHeaderImpl()<CR>
-<
-See also
-
-
-------------------------------------------------------------------------------
-IncludeGuard()                                                 *:IncludeGuard*
+IncludeGuard()                                                  *IncludeGuard*
         Adds a forward declaration.
 
         To remap: >
         :nmap ,# :call IncludeGuard()<CR>
 <
-See also
-
-
 ------------------------------------------------------------------------------
 SmartInclude()                                                  *SmartInclude*
         Expand #i to #include <.h> or #include ".h". The latter is
@@ -163,25 +252,22 @@ SmartInclude()                                                  *SmartInclude*
 ------------------------------------------------------------------------------
 LicensHeader( license )                                        *LicenseHeader*
 
-
 ------------------------------------------------------------------------------
 CreateChangeLogEntry()                                  *CreateChangeLogEntry*
         Create a changelog entry. This function will split-open the
         changelog file and start an entry for you.
 
-See also *CreateTODOEntry*
-
+See also |CreateTODOEntry|
 
 ------------------------------------------------------------------------------
 CreateTODOEntry()                                            *CreateTODOEntry*
         Create a TODO entry. This function will split-open the
         TODO file and start an entry for you.
 
-See also *CreateChangeLogEntry*
-
+See also |CreateChangeLogEntry|
 
 ------------------------------------------------------------------------------
-AlignAssignments()                                         *AlightAssignments*
+AlignAssignments()                                          *AlignAssignments*
 
         This function will align the assignments for the statements in
         a code block.
@@ -201,22 +287,15 @@ AlignAssignments()                                         *AlightAssignments*
         Code for this function found here:
         http://www.ibm.com/developerworks/linux/library/l-vim-script-2/index.html
 
-See also
-
-
 ------------------------------------------------------------------------------
 CommentLine()                                                    *CommentLine*
         Adds or removes a comment on lines (works with visual
         selection).
 
         To remap: >
-                " Toggle line comments on Ctrl+\
-                map <C-Bslash> :call CommentLine()<LF>
+        " Toggle line comments on Ctrl+\
+        map <C-Bslash> :call CommentLine()<LF>
 <
-
-See also
-
-
 ------------------------------------------------------------------------------
 CommentBlock()                                                  *CommentBlock*
         Adds a standard comment block; this function is ment to be
@@ -226,43 +305,60 @@ CommentBlock()                                                  *CommentBlock*
         This function will also prompt for a comment string.
 
         Example: >
-                /// =========================================================================
-                /// comment
-                /// \brief:
-                ///
-                /// =========================================================================
+                // ======================================
+                // comment
+                // ======================================
 <
 
         To remap: >
-                " Project or standard C++ comment block
-                imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'width':73})<CR>
+        " Project or standard C++ comment block
+        imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'=', 'width':73})<CR>
 <
 
-See also
 
 ===-----------------------------------X------------------------------------===
-2.2. Local Functions                                  *cpp-devel-LocalFunctions*
+2.4 Local Functions                                 *cpp-devel-LocalFunctions*
+These functions are internal only (not callable from the command
+line).
 
-CreateMatchLine()                                            *CreateMatchLine*
-SmartParens( char, ... )                                         *SmartParens*
-SpaceBetweenKeywordAndParens()                  *SpaceBetweenKeywordAndParens*
-        This function will add a space after the paren for the
-        following fuctions:
-                if, for, while, switch, foreach, forever
-AskToSave()                                                        *AskToSave*
-CreatePrivateHeader( privateHeader )                     *CreatePrivateHeader*
-ClassNameFromHeader()                                    *ClassNameFromHeader*
-ClassNameFromImpl()                                        *ClassNameFromImpl*
-RunDiff()                                                            *RunDiff*
-        Not used.
-AddQtSyntax()                                                    *AddQtSyntax*
-        Not used.
-UpdateMocFiles()                                              *UpdateMocFiles*
-        Not used.
-MapIdentHeader()                                              *MapIdentHeader*
-        This function basicaly maps some functions to their headers.
+------------------------------------------------------------------------------
+s:CreateMatchLine()                                        *s:CreateMatchLine*
+        Finds the line in wich to place the matching brace/paren/bracket.
+
+------------------------------------------------------------------------------
+s:AskToSave()                                                    *s:AskToSave*
+        Asks to save a file.
+
+------------------------------------------------------------------------------
+s:ClassNameFromHeader()                                *s:ClassNameFromHeader*
+
+------------------------------------------------------------------------------
+s:ClassNameFromImpl()                                    *s:ClassNameFromImpl*
+
+------------------------------------------------------------------------------
+s:MapIdentHeader()                                          *s:MapIdentHeader*
+        This function basically maps some functions to their headers.
 
         e.g. It knows that std::string needs the <string.h> file and
+
+------------------------------------------------------------------------------
+s:CreatePrivateHeader( privateHeader )                 *s:CreatePrivateHeader*
+        Creates a private header file.
+        
+        NOTE: 1. When you are in the header file, cursor must be on the first
+                 line of the class.
+        
+                        Ex: >
+                          class MyClass      <--- Cursor Must be on this line
+                          {
+                              ...
+<
+               2. No header guard or private decl is made in the
+                  header file.
+
+See also |SwitchPrivateHeaderImpl|
+
+------------------------------------------------------------------------------
 AddHeader()                                                        *AddHeader*
 Directory_matcher()                                        *Directory_matcher*
         This function will search up and down directories from the
@@ -272,5 +368,6 @@ Directory_matcher()                                        *Directory_matcher*
         "out-of-source-builds" like when using CMAKE to build a
         project. All this leads to the simple act of being able to use
         `make' for out-of-source-builds from within Vim.
-        
-SmartComplete()                                            *SmartComplete*
+
+------------------------------------------------------------------------------
+SmartComplete()                                                *SmartComplete*
