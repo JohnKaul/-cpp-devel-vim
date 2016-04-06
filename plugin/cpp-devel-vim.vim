@@ -24,13 +24,13 @@
 "
 " John Kaul
 "
-" BRIEF:
+" BRIEF:"{{{
 " This vim plugin will preform many "necessary"/"useful" things when
 " programming in the C++ lanugage.
-"
-" DESCRIPTION:
-"
-" FEATURES:
+""}}}
+" DESCRIPTION:"{{{
+""}}}
+" FEATURES:"{{{
 " o  Automatic brace and parenthesis addition.
 "       ~ Intelligence added to place braces on same line as if,while,do,etc.
 " o  Automatic space between keyword and paren addition.
@@ -51,8 +51,8 @@
 " o  Ability to align assignments in surrounding statements.
 " o  Automatic tagfile write for better project source code navigation.
 " o  Automatic 'path' setting for 'gf' command navigation.
-"
-" EXAMPLES:
+""}}}
+" EXAMPLES:"{{{
 " When adding a WHILE--or IF, FOR, etc--statement, braces at the end of the line will be
 " added automatically. A key-press will be denoted with a bracket.
 "
@@ -67,9 +67,8 @@
 "       for ( ;;; ) {
 "
 "       }
-"
-"
-" NOTES:
+""}}}
+" NOTES:"{{{
 " To use this file, place it in your plugin directory or load on demand:
 "       source /path/to/vimscripts/cpp-devel-vim.vim
 "
@@ -90,7 +89,7 @@
 "     let Tlist_Process_File_Always=1
 "     set statusline=%<%f:[\ %{Tlist_Get_Tag_Prototype_By_Line()}\ ]\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 " endif
-
+"}}}
 "------------------------------------------------------------------------------
 let s:MSWIN = has("win16") || has("win32")   || has("win64")    || has("win95")
 let s:UNIX  = has("unix")  || has("macunix") || has("win32unix") || has(0) || 1
@@ -140,17 +139,7 @@ function! SetCppCodingStyle()     "{{{
     " End Path Stuff
     "--------------------------------------------------------------
 
-    "=============================================================================
-    "                            ~ W A R N I N G ~
-    "=============================================================================
-    " The following section is a command override
-    "-----------------------------------------------------------------------------
-    :command! -nargs=0 Make :call Make()
-    " Create a command for the Make() function.
-    :cabbrev make <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Make' : 'make')<CR>
-    " Overirde the `make' command to use ours instead.
-"    echohl WarningMsg | echo "WARNING: 'make' command overridden to custom 'Make()' function." | echohl None
-    "-----------------------------------------------------------------------------
+    call s:CreateCommands()
 
     call s:INOREMappings()
     call s:NormalVisualMappings()
@@ -269,6 +258,28 @@ function! s:InsertAbbreviations()        "{{{
 
     "" " Insert a stripped down CVS diff
     "" iab DIFF <Esc>:call RunDiff()<CR>
+endfunction     "}}}
+
+function! s:CreateCommands()        "{{{
+    " ===========================================================================
+    " Custom Commands
+    " ===========================================================================
+
+    "=============================================================================
+    "                            ~ W A R N I N G ~
+    "=============================================================================
+    " The following section is a command override for the make command
+    "-----------------------------------------------------------------------------
+    :command! -nargs=0 Make :call Make()
+    " Create a command for the Make() function.
+    :cabbrev make <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Make' : 'make')<CR>
+    " Overirde the `make' command to use ours instead.
+"    echohl WarningMsg | echo "WARNING: 'make' command overridden to custom 'Make()' function." | echohl None
+    "-----------------------------------------------------------------------------
+
+    " Create a command for creating a tags file at the project root.
+    :command! -nargs=0 MakeCtags :call s:CtagsWrite([s:AssumedProjectRoot])
+
 endfunction     "}}}
 
 function! DisableSmartLineBreak()     "{{{
@@ -1427,6 +1438,7 @@ function! s:CtagsWrite( path )   "{{{
     exe "!ctags -R --exclude=bin --exclude=build --exclude=binary --exclude=Release --exclude=Debug --exclude=CMakeFiles " . s:AssumedProjectRoot . '*'
     exe "cd " . s:FileLocation
 endfunction "}}}
+
 
 " ================================
 " Autogroup settings.
