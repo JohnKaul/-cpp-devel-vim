@@ -269,25 +269,37 @@ function! s:InsertAbbreviations()                       "{{{
     "" iab DIFF <Esc>:call RunDiff()<CR>
 endfunction     "}}}
 
-function! s:CreateCommands()        "{{{
+" --------------------------------------------------------------------
+" s:CreateCommands()
+" Creates the following commands:
+"
+"           :make       :       Overides built in make command
+"           :MakeCtags  :       Attempts to create tags file in the
+"                               project root folder.
+" --------------------------------------------------------------------
+function! s:CreateCommands()                            "{{{
     " ===========================================================================
     " Custom Commands
     " ===========================================================================
 
     "=============================================================================
-    "                            ~ W A R N I N G ~
+    "~ W A R N I N G ~
     "=============================================================================
-    " The following section is a command override for the make command
+    "The following section is a command override for the make
+    "command
     "-----------------------------------------------------------------------------
     :command! -nargs=0 Make :call Make()
     " Create a command for the Make() function.
-    :cabbrev make <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Make' : 'make')<CR>
-    " Overirde the `make' command to use ours instead.
-"    echohl WarningMsg | echo "WARNING: 'make' command overridden to custom 'Make()' function." | echohl None
+    :cabbrev make <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Make'
+    : 'make')<CR>
+    " Overirde the `make' command to use ours instead.  echohl
+    " WarningMsg | echo "WARNING: 'make' command overridden to custom
+    " 'Make()' function." | echohl None
     "-----------------------------------------------------------------------------
 
     " Create a command for creating a tags file at the project root.
-    :command! -nargs=0 MakeCtags :call s:CtagsWrite([s:AssumedProjectRoot])
+    :command! -nargs=0 MakeCtags :call
+    s:CtagsWrite([s:AssumedProjectRoot])
 
 endfunction     "}}}
 
@@ -740,6 +752,7 @@ function! s:AskToSave()                                 "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" CreatePrivateHeader(privateHeader)
 " --------------------------------------------------------------------
 function! CreatePrivateHeader( privateHeader )          "{{{
     let privateheaders = '_p\.\([hH]\|hpp\|hxx\)$'
@@ -782,6 +795,7 @@ function! CreatePrivateHeader( privateHeader )          "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" s:ClassNameFromHeader()
 " --------------------------------------------------------------------
 function! s:ClassNameFromHeader()                       "{{{
     :normal gg
@@ -791,6 +805,7 @@ function! s:ClassNameFromHeader()                       "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" s:ClassNameFromImpl()
 " --------------------------------------------------------------------
 function! s:ClassNameFromImpl()                         "{{{
     :normal gg
@@ -800,6 +815,7 @@ function! s:ClassNameFromImpl()                         "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" IncludeGuard()
 " --------------------------------------------------------------------
 function! IncludeGuard()                                "{{{
     let guard = toupper( substitute( expand( '%' ), '[\./]', '_', 'g' ) )
@@ -811,6 +827,7 @@ function! IncludeGuard()                                "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" LicenseHeader(license)
 " --------------------------------------------------------------------
 function! LicenseHeader( license )                      "{{{
     " let filename = $HOME . "/" . a:license . "HEADER"
@@ -822,6 +839,7 @@ function! LicenseHeader( license )                      "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" SmartInclude()
 " --------------------------------------------------------------------
 function! SmartInclude()                                "{{{
     let next = nr2char( getchar( 0 ) )
@@ -835,6 +853,7 @@ function! SmartInclude()                                "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" s:MakeIdentHeader(ident)
 "
 " TODO: Rewite this fuction using dictionaries.
 " --------------------------------------------------------------------
@@ -1035,6 +1054,7 @@ function! s:MapIdentHeader( ident )                     "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" AddHeader()
 " --------------------------------------------------------------------
 " This is a rather dirty hack, but seems to work somehow :-) (malte)
 function! AddHeader()                                   "{{{
@@ -1111,6 +1131,7 @@ function! AddHeader()                                   "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" AddForward()
 " --------------------------------------------------------------------
 function! AddForward()                                  "{{{
     let s = getline( '.' )
@@ -1169,6 +1190,7 @@ function! AddForward()                                  "{{{
 endfunction  "  }}}
 
 " --------------------------------------------------------------------
+" CreateChangeLogEntry()
 " --------------------------------------------------------------------
 function! CreateChangeLogEntry()                        "{{{
     let currentBuffer = expand( "%" )
@@ -1216,6 +1238,7 @@ function! CreateChangeLogEntry()                        "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" CreateTDODOEntry()
 " --------------------------------------------------------------------
 function! CreateTODOEntry()                             "{{{
     let currentBuffer = expand( "%" )
@@ -1232,6 +1255,7 @@ function! CreateTODOEntry()                             "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" AddQtSyntax()
 " --------------------------------------------------------------------
 "" function! AddQtSyntax()                              "{{{
 ""     if expand( "<amatch>" ) == "cpp"
@@ -1271,6 +1295,11 @@ endfunction "}}}
 "" endfunction "}}}
 
 " --------------------------------------------------------------------
+" s:Directory_Marcher(directories, path)
+"
+"           directories     :       The directories to search for.
+"           path            :       The path to sart looking from and
+"                                   direction to search (up/down/both)
 " --------------------------------------------------------------------
 function! s:Directory_Matcher(directories, path)        "{{{
     let s:path = get(a:path, 'path', ['.;'])
@@ -1284,6 +1313,7 @@ function! s:Directory_Matcher(directories, path)        "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" AlignAssignments()
 " --------------------------------------------------------------------
 function! AlignAssignments ()                           "{{{
     "   Align Assignments:
@@ -1345,6 +1375,7 @@ function! AlignAssignments ()                           "{{{
 endfunction     "}}}
 
 " --------------------------------------------------------------------
+" CommentLine()
 " --------------------------------------------------------------------
 function! CommentLine()                                 "{{{
   if getline(".") =~ '//-x-   '
@@ -1359,6 +1390,10 @@ function! CommentLine()                                 "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
+" CommentBlock(comment, opt)
+"
+"           comment     :
+"           opt         :
 " --------------------------------------------------------------------
 function! CommentBlock(comment, opt)                    "{{{
     " Unpack optional arguments...
@@ -1408,7 +1443,7 @@ function! CommentBlock(comment, opt)                    "{{{
 endfunction     "}}}
 
 " --------------------------------------------------------------------
-"
+"  SmartComplete()
 " Implement smart completion magic...
 " --------------------------------------------------------------------
 function! SmartComplete ()                              "{{{
@@ -1477,6 +1512,7 @@ call s:AddCompletion(  "'",           "'",        s:NONE,                     0 
 call s:AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1   )
 
 " --------------------------------------------------------------------
+"  MakeSetup()
 " --------------------------------------------------------------------
 function! MakeSetup()                                   "{{{
     " if s:MSWIN
@@ -1495,6 +1531,7 @@ function! MakeSetup()                                   "{{{
 endfunction     "}}}
 
 " --------------------------------------------------------------------
+" Make()
 " --------------------------------------------------------------------
 function! Make()                                        "{{{
     call MakeSetup()
@@ -1515,6 +1552,8 @@ function! Make()                                        "{{{
 endfunction     "}}}
 
 " --------------------------------------------------------------------
+" s:CtagsWrite(path)
+"           path        :   Path to start ctags from.
 " --------------------------------------------------------------------
 function! s:CtagsWrite( path )                          "{{{
     let s:PathToRunCtagsFrom = get(a:path, 'path', ['.'])
