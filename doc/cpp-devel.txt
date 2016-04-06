@@ -22,6 +22,26 @@ CONTENTS                                                  *cpp-devel-contents*
 
 This plugin will help preform many useful functions to help write C/C++ code.
 
+The main goal of this plugin was to offer me a painless method to keep
+a tags file up-to-date and give me the ability to use the built in
+|:make| command to build my "out-of-source-build projects". This
+plugin looks for a "build" directory and assumes that it is at the
+project root. 
+
+Indent style is big and usually very personal topic and, this plugin
+does offer to help enforce some basic rules related to style. However,
+coding style isn't this plugins main goal (it is offered as an added
+feature) so it can be turned off.
+
+By defauly this plugin helps write code that is mostly K&R style code
+(think: braces on the same line) and with very little effort it can be
+made to conform to a different style. There are many, many different
+indent styles--K&R, BSD, Allman, etc--and many different style guides
+and this plugin certainly isn't intended to replace those and it
+certainly will not reformat existing code so, if you do not already
+have a preferred coding style, I hope the style aspect of this plugin
+helps you. 
+
 
 
 ===-----------------------------------X------------------------------------===

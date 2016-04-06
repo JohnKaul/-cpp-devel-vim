@@ -140,27 +140,31 @@ function! SetCppCodingStyle()                           "{{{
     " Path Stuff
     exe "cd %:p:h"
     "the path for the file
-    let s:FileLocation=fnamemodify(expand(getcwd()), ':p')
+    let g:FileLocation=fnamemodify(expand(getcwd()), ':p')
 
-    let s:BinDirectory = s:Directory_Matcher(s:BuildDirectoriesToSearch, ['.;'])
-    if s:MSWIN
-        let s:AssumedProjectRoot = s:BinDirectory . '..\'
-    else
-        let s:AssumedProjectRoot = s:BinDirectory . '../'
-    endif
-    " Search for the binary directory and assume it is at the project root.
-    " This is to set the `path' variable so `gf' works.
-    "
-    let &tags = fnamemodify(findfile(s:AssumedProjectRoot . 'tags', ".;"), ':p')
+    let g:BinDirectory = s:Directory_Matcher(s:BuildDirectoriesToSearch, ['.;'])
+    if g:BinDirectory != '.'
+        if s:MSWIN
+            let g:AssumedProjectRoot = g:BinDirectory . '..\'
+        else
+            let g:AssumedProjectRoot = g:BinDirectory . '../'
+        endif
+        " Search for the binary directory and assume it is at the project root.
+        " This is to set the `path' variable so `gf' works.
+        "
+        autocmd BufWritePost *.c,*.cc,*.cpp,*.h,*.hpp call s:CtagsWrite([g:AssumedProjectRoot])
 
-    if !s:MSWIN
-        " Do not include extra (Unix) paths when on windows.
-        let s:TypicalUnixIncludeDirectories = '/usr/include,/usr/local/include,'
-        let &path = s:TypicalUnixIncludeDirectories . s:AssumedProjectRoot . '**4/'
-        " Allow `path' to search 4 levels deep.
-    else
-        let &path = s:AssumedProjectRoot . '**4\'
-        " Allow `path' to search 4 levels deep.
+        let &tags = fnamemodify(findfile(g:AssumedProjectRoot . 'tags', ".;"), ':p')
+
+        if !s:MSWIN
+            " Do not include extra (Unix) paths when on windows.
+            let s:TypicalUnixIncludeDirectories = '/usr/include,/usr/local/include,'
+            let &path = s:TypicalUnixIncludeDirectories . g:AssumedProjectRoot . '**4/'
+            " Allow `path' to search 4 levels deep.
+        else
+            let &path = g:AssumedProjectRoot . '**4\'
+            " Allow `path' to search 4 levels deep.
+        endif
     endif
     " End Path Stuff
     "--------------------------------------------------------------
@@ -250,8 +254,8 @@ endfunction     "}}}
 " --------------------------------------------------------------------
 function! s:NormalMappings()                            "{{{
     " Switch between header and implementation files on ,h
-    nmap <silent> Gf :call SwitchHeaderImpl()<CR>
-    nmap <silent> GF :call SwitchPrivateHeaderImpl()<CR>
+    nmap <silent> ,h :call SwitchHeaderImpl()<CR>
+    nmap <silent> ,p :call SwitchPrivateHeaderImpl()<CR>
 
     " Insert an include guard based on the file name on ,#
     nmap ,# :call IncludeGuard()<CR>
@@ -317,8 +321,10 @@ function! s:CreateCommands()                            "{{{
     " 'Make()' function." | echohl None
     "-----------------------------------------------------------------------------
 
-    " Create a command for creating a tags file at the project root.
-    :command! -nargs=0 MakeCtags :call s:CtagsWrite([s:AssumedProjectRoot])
+    if g:BinDirectory != '.'
+        " Create a command for creating a tags file at the project root.
+        :command! -nargs=0 MakeCtags :call s:CtagsWrite([g:AssumedProjectRoot])
+    endif
 
 endfunction     "}}}
 
@@ -600,26 +606,29 @@ function! SmartParens( char, ... )                      "{{{
     if s =~ "\\([\"']\\|/\\*\\)"
         return a:char
     endif
-    if a:0 > 0
-        if strpart( getline( '.' ), col( '.' ) - 3, 2 ) == a:1 . ' '
-            return "\<BS>" . a:char
-        endif
-        if strpart( getline( '.' ), col( '.' ) - 2, 1 ) == ' '
-            return a:char
-        endif
-        return ' ' . a:char
-    endif
+    " if a:0 > 0
+    "     if strpart( getline( '.' ), col( '.' ) - 3, 2 ) == a:1 . ' '
+    "         return "\<BS>" . a:char
+    "     endif
+    "     if strpart( getline( '.' ), col( '.' ) - 2, 1 ) == ' '
+    "         return a:char
+    "     endif
+    "     return ' ' . a:char
+    " endif
     if !exists("g:DisableSpaceBeforeParen")
         if a:char == '('
             if strpart( getline( '.' ), col( '.' ) - 3, 2 ) == 'if' ||
+              \strpart( getline( '.' ), col( '.' ) - 3, 2 ) == 'do' ||
               \strpart( getline( '.' ), col( '.' ) - 4, 3 ) == 'for' ||
+              \strpart( getline( '.' ), col( '.' ) - 5, 4 ) == 'case' ||
               \strpart( getline( '.' ), col( '.' ) - 6, 5 ) == 'while' ||
               \strpart( getline( '.' ), col( '.' ) - 7, 6 ) == 'switch'
-                return ' ( '
+                return ' ('
             endif
         endif
     endif
-    return a:char . ' '
+    return a:char 
+    " . ' '
 endfunction "}}}
 
 " --------------------------------------------------------------------
@@ -808,7 +817,7 @@ function! s:CreatePrivateHeader( privateHeader )          "{{{
             :execute 'w'
         endif
     endif
-    execute( "edit ".s:FileLocation.a:privateHeader )
+    execute( "edit ".g:FileLocation.a:privateHeader )
     let privateClassName = className . 'Private'
     let header = substitute( a:privateHeader, privateheaders, '.h', '' )
 
@@ -1556,9 +1565,9 @@ call s:AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1 
 " --------------------------------------------------------------------
 function! MakeSetup()                                   "{{{
     if s:MSWIN
-        let s:MakefileLocation = findfile(s:BinDirectory . s:MakefileName, ".;")
+        let s:MakefileLocation = findfile(g:BinDirectory . s:MakefileName, ".;")
     else
-        let s:MakefileLocation = findfile(s:BinDirectory . '/' . s:MakefileName, ".;")
+        let s:MakefileLocation = findfile(g:BinDirectory . '/' . s:MakefileName, ".;")
     endif
 
     let s:MakeProgString = s:MakeProgram . ' -f "' . s:MakefileLocation . '" ' .s:MakeCmdLineArgs
@@ -1582,9 +1591,9 @@ function! Make()                                        "{{{
     if s:MakefileLocation == ''
         exe	":make " . s:MakeCmdLineArgs
     else
-        exe "cd " . s:BinDirectory
+        exe "cd " . g:BinDirectory
         exe ":make"
-        exe "cd " . s:FileLocation
+        exe "cd " . g:FileLocation
     endif
     " open the issues window
     exe	":botright cwindow"
@@ -1595,11 +1604,13 @@ endfunction     "}}}
 "           path        :   Path to start ctags from.
 " --------------------------------------------------------------------
 function! s:CtagsWrite( path )                          "{{{
-    let s:PathToRunCtagsFrom = get(a:path, 'path', ['.'])
-    exe "cd " . s:PathToRunCtagsFrom
-    let s:FileLocation=fnamemodify(expand(getcwd()), ':p')
-    exe "!ctags -R --exclude=bin --exclude=build --exclude=binary --exclude=Release --exclude=Debug --exclude=CMakeFiles " . s:AssumedProjectRoot . '*'
-    exe "cd " . s:FileLocation
+    if g:AssumedProjectRoot
+        let s:PathToRunCtagsFrom = get(a:path, 'path', ['.'])
+        exe "cd " . s:PathToRunCtagsFrom
+        let g:FileLocation=fnamemodify(expand(getcwd()), ':p')
+        exe "!ctags -R --exclude=bin --exclude=build --exclude=binary --exclude=Release --exclude=Debug --exclude=CMakeFiles " . g:AssumedProjectRoot . '*'
+        exe "cd " . g:FileLocation
+    endif
 endfunction "}}}
 
 
@@ -1612,7 +1623,6 @@ augroup CPPProgramming
     " automatic indenting is required for SmartLineBreak to work correctly
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp,*.h,*.hpp call SetCppCodingStyle()
     autocmd BufNewFile,BufRead,BufEnter *.c,*.cc,*.cpp call MakeSetup()
-    autocmd BufWritePost *.c,*.cc,*.cpp,*.h,*.hpp call s:CtagsWrite([s:AssumedProjectRoot])
 augroup END
 
 " vim: sw=4 sts=4 et
