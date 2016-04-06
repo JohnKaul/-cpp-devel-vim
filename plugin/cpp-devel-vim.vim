@@ -107,7 +107,12 @@ let s:BuildDirectoriesToSearch = [ 'bin',
                                  \ 'Release'
                                  \ ]
 
-function! SetCppCodingStyle()     "{{{
+" --------------------------------------------------------------------
+" SetCppCodingStyle()
+" Sets the current style based functions, like textwidth, path, brace
+" and paren settings. 
+" --------------------------------------------------------------------
+function! SetCppCodingStyle()                           "{{{
     " Don't include these in filename completions
     set suffixes+=.lo,.o,.moc,.la,.closure,.loT
 
@@ -192,10 +197,11 @@ function! SetCppCodingStyle()     "{{{
     endif
 endfunction "}}}
 
-function! s:INOREMappings()     "{{{
-    " ===========================================================================
-    " Insert mode mappings
-    " ===========================================================================
+" --------------------------------------------------------------------
+" s:INOREMappings()
+" Insert mode mappings.
+" --------------------------------------------------------------------
+function! s:INOREMappings()                             "{{{
     " Insert tab character in whitespace-only lines, complete otherwise
     inoremap <Tab> <C-R>=SmartTab()<CR>
 
@@ -219,19 +225,20 @@ function! s:INOREMappings()     "{{{
     inoremap <S-F5> <C-O>:call AddForward()<CR>
 endfunction "}}}
 
-function! s:NormalVisualMappings()       "{{{
-    " ===========================================================================
-    " Normal and visual mode mappings
-    " ===========================================================================
+" --------------------------------------------------------------------
+" s:NormalVisualMappings()
+" Normal and visual mode mappings
+" --------------------------------------------------------------------
+function! s:NormalVisualMappings()                      "{{{
     " Toggle line comments on Ctrl+\
     map <C-Bslash> :call CommentLine()<LF>
 endfunction     "}}}
 
-function! s:NormalMappings()         "{{{
-    " ===========================================================================
-    " Normal mode mappings
-    " ===========================================================================
-
+" --------------------------------------------------------------------
+" s:NormalMappings()
+" Normal mode mappings
+" --------------------------------------------------------------------
+function! s:NormalMappings()                            "{{{
     " Switch between header and implementation files on ,h
     nmap <silent> <F10> :call SwitchHeaderImpl()<CR>
     nmap <silent> ,p :call SwitchPrivateHeaderImpl()<CR>
@@ -250,18 +257,20 @@ function! s:NormalMappings()         "{{{
     nmap make :call Make()<CR>
 endfunction     "}}}
 
-function! s:InsertMappings()     "{{{
-    " ===========================================================================
-    " Insert mode mappings
-    " ===========================================================================
+" --------------------------------------------------------------------
+"  s:InsertMappings()
+"  Insert mode mappings
+" --------------------------------------------------------------------
+function! s:InsertMappings()                            "{{{
     " Project or standard C++/Java/PHP comment block
     imap <silent>  ///  <C-R>=CommentBlock(input("Enter comment: "), {'box':'-', 'width':73})<CR>
 endfunction         "}}}
 
-function! s:InsertAbbreviations()        "{{{
-    " ===========================================================================
-    " Insert mode abbreviations
-    " ===========================================================================
+" --------------------------------------------------------------------
+" s:InsertAbbreviations()
+" Insert mode abbreviations
+" --------------------------------------------------------------------
+function! s:InsertAbbreviations()                       "{{{
     " Expand #i to #include <.h> or #include ".h". The latter is chosen
     " if the character typed after #i is a dquote
     " If the character is > #include <> is inserted (standard C++ headers w/o .h)
@@ -271,12 +280,18 @@ function! s:InsertAbbreviations()        "{{{
     "" iab DIFF <Esc>:call RunDiff()<CR>
 endfunction     "}}}
 
-function! DisableSmartLineBreak()     "{{{
+" --------------------------------------------------------------------
+" DisableSmartLineBreak()
+" --------------------------------------------------------------------
+function! DisableSmartLineBreak()                       "{{{
     iunmap <CR>
     iuna else
 endfunction "}}}
 
-function! EnableSmartLineBreak()     "{{{
+" --------------------------------------------------------------------
+" EnableSmartLineBreak()
+" --------------------------------------------------------------------
+function! EnableSmartLineBreak()                        "{{{
     if exists("*pumvisible")
         inoremap <CR> <C-R>=pumvisible() ? "\<lt>CR>" : "\<lt>ESC>:call SmartLineBreak()\<lt>CR>a\<lt>CR>"<CR>
     else
@@ -285,7 +300,10 @@ function! EnableSmartLineBreak()     "{{{
     iab else <C-R>=SmartElse()<CR>
 endfunction "}}}
 
-function! SmartElse()     "{{{
+" --------------------------------------------------------------------
+" SmartElse()
+" --------------------------------------------------------------------
+function! SmartElse()                                   "{{{
     let prefix = ''
     if strlen(g:need_brace_on_same_line) > 0 && 'else' =~ g:need_brace_on_same_line
         if getline('.') =~ '^\s*$'
@@ -299,7 +317,10 @@ function! SmartElse()     "{{{
     return prefix . "else\<Right>"
 endfunction "}}}
 
-function! s:CreateMatchLine()     "{{{
+" --------------------------------------------------------------------
+" s:CreateMatchLine()
+" --------------------------------------------------------------------
+function! s:CreateMatchLine()                           "{{{
     let linenum = line( '.' )
     let current_line = getline( linenum )
     " don't do magic if the cursor isn't at the end of the line or if it's
@@ -365,21 +386,15 @@ function! s:CreateMatchLine()     "{{{
     return current_line
 endfunction "}}}
 
-"" function! AddClosingBrace(current_line)"{{{
-""     if a:current_line =~ '\<enum\|class\|struct\>'
-""         :execute "normal o};\<ESC>k"
-""     elseif a:current_line =~ '\<while\|if\|else\|for\|switch\|do\>'
-""         :execute "normal o}\<ESC>k"
-""     elseif a:current_line =~ '\<namespace\>'
-""         let namespace = substitute( a:current_line, '^.*namespace\s\+', '', '' )
-""         let namespace = substitute( namespace, '\s.*$', '', '' )
-""         :execute "normal o} // namespace " . namespace . "\<ESC>k"
-""     else
-""         :execute "normal o}\<ESC>k"
-""     endif
-"" endfunction "}}}
-
-function! AddClosingChar(current_line, Ch)"{{{
+" --------------------------------------------------------------------
+" AddClosingChar(curent_line, ch)
+" Adds a closing char on the current line or the next depending on
+" basic rules. 
+"
+"       current_line    :   The current line.
+"       ch              :   A character to add.
+" --------------------------------------------------------------------
+function! AddClosingChar(current_line, ch)              "{{{
     if a:current_line =~ '\<enum\|class\|struct\>'
         :execute "normal o};\<ESC>k"
     elseif a:current_line =~ '\<while\|if\|else\|for\|switch\|do\>'
@@ -389,11 +404,14 @@ function! AddClosingChar(current_line, Ch)"{{{
         let namespace = substitute( namespace, '\s.*$', '', '' )
         :execute "normal o} // namespace " . namespace . "\<ESC>k"
     else
-        :execute "normal o" . a:Ch ."\<ESC>k"
+        :execute "normal o" . a:ch ."\<ESC>k"
     endif
 endfunction "}}}
 
-function! SmartLineBreak()     "{{{
+" --------------------------------------------------------------------
+" SmartLinebreak()
+" --------------------------------------------------------------------
+function! SmartLineBreak()                              "{{{
     if synIDattr(synID(line("."), col("."), 1), "name") == 'cComment' "inside a /* */ comment at the point where the line break occurs
         return
     endif
@@ -477,14 +495,23 @@ function! SmartLineBreak()     "{{{
     :execute "normal $"
 endfunction "}}}
 
-function! SmartParensOn()     "{{{
+" --------------------------------------------------------------------
+" SmartParensOn()
+" Add some insert mode mappings upon command. These mappings are to
+" create a mathcing Paren, and  Bracket
+" --------------------------------------------------------------------
+function! SmartParensOn()                               "{{{
     inoremap ( <C-R>=SmartParens( '(' )<CR>
     inoremap [ <C-R>=SmartParens( '[' )<CR>
     inoremap ] <C-R>=SmartParens( ']', '[' )<CR>
     inoremap ) <C-R>=SmartParens( ')', '(' )<CR>
 endfunction "}}}
 
-function! SmartParensOff()     "{{{
+" --------------------------------------------------------------------
+" SmartParensOff()
+" Unmap some insert mode mappings upon command.
+" --------------------------------------------------------------------
+function! SmartParensOff()                              "{{{
     if strlen(mapcheck('[','i')) > 0
         iunmap (
         iunmap [
@@ -493,7 +520,10 @@ function! SmartParensOff()     "{{{
     endif
 endfunction "}}}
 
-function! SmartTab()     "{{{
+" --------------------------------------------------------------------
+" SmartTab()
+" --------------------------------------------------------------------
+function! SmartTab()                                    "{{{
     let col = col('.') - 1
     if !col || getline('.')[col-1] !~ '\k'
         return "\<Tab>"
@@ -502,7 +532,13 @@ function! SmartTab()     "{{{
     endif
 endfunction "}}}
 
-function! SmartParens( char, ... )"{{{
+" --------------------------------------------------------------------
+" SmartParens(char, ...)
+"
+"       char            :   A Character
+"       ...             :   
+" --------------------------------------------------------------------
+function! SmartParens( char, ... )                      "{{{
     if ! ( &syntax =~ '^\(c\|cpp\)$' )
         return a:char
     endif
@@ -538,7 +574,10 @@ function! SmartParens( char, ... )"{{{
     return a:char . ' '
 endfunction "}}}
 
-function! SpaceBetweenKeywordAndParens()     "{{{
+" --------------------------------------------------------------------
+" SpaceBetweenKeywordAndParens()
+" --------------------------------------------------------------------
+function! SpaceBetweenKeywordAndParens()                "{{{
     if ! ( &syntax =~ '^\(c\|cpp\|java\)$' )
         return '('
     endif
@@ -574,7 +613,10 @@ function! SpaceBetweenKeywordAndParens()     "{{{
     return '('
 endfunction "}}}
 
-function! SwitchHeaderImpl()     "{{{
+" --------------------------------------------------------------------
+" SwitchHeaderInpl()
+" --------------------------------------------------------------------
+function! SwitchHeaderImpl()                            "{{{
     let privateheaders = '_p\.\([hH]\|hpp\|hxx\)$'
     let headers = '\.\([hH]\|hpp\|hxx\)$'
     let impl = '\.\([cC]\|cpp\|cc\|cxx\)$'
@@ -619,7 +661,10 @@ function! SwitchHeaderImpl()     "{{{
     endif
 endfunction "}}}
 
-function! SwitchPrivateHeaderImpl()     "{{{
+" --------------------------------------------------------------------
+" SwitchPrivateHeaderImpl()
+" --------------------------------------------------------------------
+function! SwitchPrivateHeaderImpl()                     "{{{
     let privateheaders = '_p\.\([hH]\|hpp\|hxx\)$'
     let headers = '\.\([hH]\|hpp\|hxx\)$'
     let impl = '\.\([cC]\|cpp\|cc\|cxx\)$'
@@ -667,7 +712,10 @@ function! SwitchPrivateHeaderImpl()     "{{{
     endif
 endfunction "}}}
 
-function! s:AskToSave()     "{{{
+" --------------------------------------------------------------------
+"  AskToSave()
+" --------------------------------------------------------------------
+function! s:AskToSave()                                 "{{{
     if &modified
         let yesorno = input("Save changes before switching file? [Y/n]")
         if yesorno == 'y' || yesorno == '' || yesorno == 'Y'
@@ -680,7 +728,9 @@ function! s:AskToSave()     "{{{
     return 1
 endfunction "}}}
 
-function! CreatePrivateHeader( privateHeader )      "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! CreatePrivateHeader( privateHeader )          "{{{
     let privateheaders = '_p\.\([hH]\|hpp\|hxx\)$'
     let headers = '\.\([hH]\|hpp\|hxx\)$'
     let impl = '\.\([cC]\|cpp\|cc\|cxx\)$'
@@ -720,21 +770,27 @@ function! CreatePrivateHeader( privateHeader )      "{{{
     :normal Gkko#include "h"class pQ_DECLARE_PUBLIC(c)protected:c *q_ptr;
 endfunction "}}}
 
-function! s:ClassNameFromHeader()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! s:ClassNameFromHeader()                       "{{{
     :normal gg
     call search( '^\s*class\s\+\([A-Za-z0-9]\+_EXPORT\s\+\)\?[A-Za-z_]\+\s*\(:\s*[,\t A-Za-z_]\+\)\?\s*\n\?\s*{' )
     "\zs and \ze mark start and end of the matching
     return matchstr( getline('.'), '\s\+\zs\w\+\ze\s*\(:\|{\|$\)' )
 endfunction "}}}
 
-function! s:ClassNameFromImpl()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! s:ClassNameFromImpl()                         "{{{
     :normal gg
     call search( '\s*\([A-Za-z_]\+\)::\1\s*(' )
     :normal "cye
     return @c
 endfunction "}}}
 
-function! IncludeGuard()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! IncludeGuard()                                "{{{
     let guard = toupper( substitute( expand( '%' ), '[\./]', '_', 'g' ) )
     call append( '^', '#define ' . guard )
     +
@@ -743,7 +799,9 @@ function! IncludeGuard()     "{{{
     +
 endfunction "}}}
 
-function! LicenseHeader( license )      "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! LicenseHeader( license )                      "{{{
     " let filename = $HOME . "/" . a:license . "HEADER"
     " execute ":0r " . filename
 "   call append( 0, system( "cat " . filename ) )
@@ -752,7 +810,9 @@ function! LicenseHeader( license )      "{{{
     call append( 0, license)
 endfunction "}}}
 
-function! SmartInclude()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! SmartInclude()                                "{{{
     let next = nr2char( getchar( 0 ) )
     if next == '"'
         return "#include \".h\"\<Left>\<Left>\<Left>"
@@ -763,8 +823,11 @@ function! SmartInclude()     "{{{
     return "#include <.h>\<Left>\<Left>\<Left>"
 endfunction "}}}
 
+" --------------------------------------------------------------------
+"
 " TODO: Rewite this fuction using dictionaries.
-function! s:MapIdentHeader( ident )       "{{{
+" --------------------------------------------------------------------
+function! s:MapIdentHeader( ident )                     "{{{
     let header = tolower(substitute(a:ident, '::', '/', 'g')).'.h'
     if a:ident =~ 'Private$'
         let header = substitute(header, 'private', '_p', '')
@@ -960,8 +1023,10 @@ function! s:MapIdentHeader( ident )       "{{{
     endwhile
 endfunction "}}}
 
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
 " This is a rather dirty hack, but seems to work somehow :-) (malte)
-function! AddHeader()     "{{{
+function! AddHeader()                                   "{{{
     let s = getline( '.' )
     let i = col( '.' ) - 1
     while i > 0 && strpart( s, i, 1 ) !~ '[A-Za-z0-9_:]'
@@ -1034,7 +1099,9 @@ function! AddHeader()     "{{{
     endif
 endfunction "}}}
 
-function! AddForward()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! AddForward()                                  "{{{
     let s = getline( '.' )
     let i = col( '.' ) - 1
     while i > 0 && strpart( s, i, 1 ) !~ '[A-Za-z0-9_:]'
@@ -1090,12 +1157,9 @@ function! AddForward()     "{{{
     endif
 endfunction  "  }}}
 
-function! RunDiff() "{{{
-    echo 'Diffing....'
-    read! cvs diff -bB -I \\\#include | egrep -v '(^Index:|^=+$|^RCS file:|^retrieving revision|^diff -u|^[+-]{3})'
-endfunction "}}}
-
-function! CreateChangeLogEntry()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! CreateChangeLogEntry()                        "{{{
     let currentBuffer = expand( "%" )
 
     if exists( "g:EMAIL" )
@@ -1140,7 +1204,9 @@ function! CreateChangeLogEntry()     "{{{
     execute "normal 3G$"
 endfunction "}}}
 
-function! CreateTODOEntry()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! CreateTODOEntry()                             "{{{
     let currentBuffer = expand( "%" )
 
     if bufname( "TODO" ) != "" && bufwinnr( bufname( "TODO" ) ) != -1
@@ -1154,7 +1220,9 @@ function! CreateTODOEntry()     "{{{
     execute "normal 3G$"
 endfunction "}}}
 
-"" function! AddQtSyntax()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+"" function! AddQtSyntax()                              "{{{
 ""     if expand( "<amatch>" ) == "cpp"
 ""         syn keyword qtKeywords     signals slots emit Q_SLOTS Q_SIGNALS
 ""         syn keyword qtMacros       Q_OBJECT Q_WIDGET Q_PROPERTY Q_ENUMS Q_OVERRIDE Q_CLASSINFO Q_SETS SIGNAL SLOT Q_DECLARE_PUBLIC Q_DECLARE_PRIVATE Q_D Q_Q Q_DISABLE_COPY Q_DECLARE_METATYPE Q_PRIVATE_SLOT Q_FLAGS Q_INTERFACES Q_DECLARE_INTERFACE Q_EXPORT_PLUGIN2 Q_GADGET Q_SCRIPTABLE Q_INVOKABLE METHOD Q_ARG Q_RETURN_ARG Q_GLOBAL_STATIC Q_GLOBAL_STATIC_WITH_ARGS
@@ -1191,7 +1259,9 @@ endfunction "}}}
 ""     endif
 "" endfunction "}}}
 
-function! s:Directory_Matcher(directories, path)       "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! s:Directory_Matcher(directories, path)        "{{{
     let s:path = get(a:path, 'path', ['.;'])
     for $dir in a:directories
         if finddir($dir, s:path) != ""
@@ -1202,7 +1272,9 @@ function! s:Directory_Matcher(directories, path)       "{{{
     return "."
 endfunction "}}}
 
-function! AlignAssignments ()        "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! AlignAssignments ()                           "{{{
     "   Align Assignments:
     "   This function will align the assignments for the statements in a code
     "   block.
@@ -1261,7 +1333,9 @@ function! AlignAssignments ()        "{{{
     endfor
 endfunction     "}}}
 
-function! CommentLine()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! CommentLine()                                 "{{{
   if getline(".") =~ '//-x-   '
     let hls=@/
     s,^//-x-   ,,
@@ -1273,7 +1347,9 @@ function! CommentLine()     "{{{
   endif
 endfunction "}}}
 
-function! CommentBlock(comment, opt)        "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! CommentBlock(comment, opt)                    "{{{
     " Unpack optional arguments...
     let introducer = get(a:opt, 'intro', '//'                 )
     let box_char   = get(a:opt, 'box',   '*'                  )
@@ -1320,8 +1396,11 @@ function! CommentBlock(comment, opt)        "{{{
 
 endfunction     "}}}
 
+" --------------------------------------------------------------------
+"
 " Implement smart completion magic...
-function! SmartComplete ()   "{{{
+" --------------------------------------------------------------------
+function! SmartComplete ()                              "{{{
     " Remember where we parked...
     let cursorpos = getpos('.')
     let cursorcol = cursorpos[2]
@@ -1386,7 +1465,9 @@ call s:AddCompletion(  "'",           s:NONE,     "'",                        1 
 call s:AddCompletion(  "'",           "'",        s:NONE,                     0   )
 call s:AddCompletion(  "std::cout",   s:NONE,     " << std::endl;",           1   )
 
-function! MakeSetup()     "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! MakeSetup()                                   "{{{
     " if s:MSWIN
     "     let s:BinaryExtension     = '.exe'
     "     let s:MakeProgram         = s:MakeProgram . s:BinaryExtension
@@ -1402,7 +1483,9 @@ function! MakeSetup()     "{{{
     let &makeprg=s:MakeProgString
 endfunction     "}}}
 
-function! Make()        "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! Make()                                        "{{{
     call MakeSetup()
 
     " close the issues window
@@ -1420,7 +1503,9 @@ function! Make()        "{{{
     exe	":botright cwindow"
 endfunction     "}}}
 
-function! s:CtagsWrite( path )   "{{{
+" --------------------------------------------------------------------
+" --------------------------------------------------------------------
+function! s:CtagsWrite( path )                          "{{{
     let s:PathToRunCtagsFrom = get(a:path, 'path', ['.'])
     exe "cd " . s:PathToRunCtagsFrom
     let s:FileLocation=fnamemodify(expand(getcwd()), ':p')
