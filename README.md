@@ -25,6 +25,7 @@ If you don't have a preferred installation method, I recommend installing [patho
 
     cd ~/.vim/bundle
     git clone https://JohnKaul@bitbucket.org/JohnKaul/cpp-devel-vim.git
+    vim -u NONE -c "helptags cpp-devel-vim/doc" -c q
 
 Otherwise you can always download this and place the `cpp-devel-vim.vim` file in the `plugin` directory. 
 
