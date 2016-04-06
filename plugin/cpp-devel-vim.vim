@@ -250,8 +250,8 @@ endfunction     "}}}
 " --------------------------------------------------------------------
 function! s:NormalMappings()                            "{{{
     " Switch between header and implementation files on ,h
-    nmap <silent> <F10> :call SwitchHeaderImpl()<CR>
-    nmap <silent> ,p :call SwitchPrivateHeaderImpl()<CR>
+    nmap <silent> Gf :call SwitchHeaderImpl()<CR>
+    nmap <silent> GF :call SwitchPrivateHeaderImpl()<CR>
 
     " Insert an include guard based on the file name on ,#
     nmap ,# :call IncludeGuard()<CR>
@@ -581,6 +581,7 @@ endfunction "}}}
 
 " --------------------------------------------------------------------
 " SmartParens(char, ...)
+" Adds the space before the '(' after the keywords if/for/while/switch.
 "
 "       char            :   A Character
 "       ...             :   
@@ -718,7 +719,7 @@ function! SwitchPrivateHeaderImpl()                     "{{{
     let fn = expand( '%' )
     " I added a beginning definition of LIST to see if I can get this function
     " working.
-    let list = glob( substitue( fn, privaeheaders, '.*', '') )
+    let list = glob( substitute( fn, privateheaders, '.*', '') )
     if fn =~ privateheaders
         let list = glob( substitute( fn, privateheaders, '.*', '' ) )
     elseif fn =~ headers
@@ -752,15 +753,16 @@ function! SwitchPrivateHeaderImpl()                     "{{{
         execute( "set ts=4" )
     elseif fn =~ impl
         let file = substitute( fn, impl, '_p.h', '' )
-        call CreatePrivateHeader( file )
+        call s:CreatePrivateHeader( file )
     elseif fn =~ headers
         let file = substitute( fn, headers, '_p.h', '' )
-        call CreatePrivateHeader( file )
+        call s:CreatePrivateHeader( file )
     endif
 endfunction "}}}
 
 " --------------------------------------------------------------------
-"  AskToSave()
+" AskToSave()
+" Prompts a user to save a file.
 " --------------------------------------------------------------------
 function! s:AskToSave()                                 "{{{
     if &modified
@@ -776,9 +778,10 @@ function! s:AskToSave()                                 "{{{
 endfunction "}}}
 
 " --------------------------------------------------------------------
-" CreatePrivateHeader(privateHeader)
+" s:CreatePrivateHeader(privateHeader)
+" Creates a private header file.
 " --------------------------------------------------------------------
-function! CreatePrivateHeader( privateHeader )          "{{{
+function! s:CreatePrivateHeader( privateHeader )          "{{{
     let privateheaders = '_p\.\([hH]\|hpp\|hxx\)$'
     let headers = '\.\([hH]\|hpp\|hxx\)$'
     let impl = '\.\([cC]\|cpp\|cc\|cxx\)$'
@@ -799,23 +802,24 @@ function! CreatePrivateHeader( privateHeader )          "{{{
             let @c = className
             if getline(line('.')+1) =~ 'Q_OBJECT'
                 :normal joQ_DECLARE_PRIVATE(c)
-            else
-                :normal oQ_DECLARE_PRIVATE(c)
+            "" else
+            ""     :normal oQ_DECLARE_PRIVATE(c)
             endif
             :execute 'w'
         endif
     endif
-    execute( "edit ".a:privateHeader )
+    execute( "edit ".s:FileLocation.a:privateHeader )
     let privateClassName = className . 'Private'
     let header = substitute( a:privateHeader, privateheaders, '.h', '' )
 
     call IncludeGuard()
     " FIXME: find out what license to use
-    call LicenseHeader( "BSD" )
+    " call LicenseHeader( "BSD" )
     let @h = header
     let @p = privateClassName
     let @c = className
-    :normal Gkko#include "h"class pQ_DECLARE_PUBLIC(c)protected:c *q_ptr;
+    " :normal Gkko#include "h"class pQ_DECLARE_PUBLIC(c)protected:c *q_ptr;
+    :normal Gkko#include "h"class p
 endfunction "}}}
 
 " --------------------------------------------------------------------
