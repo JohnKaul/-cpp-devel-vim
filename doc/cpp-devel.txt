@@ -6,8 +6,9 @@ CONTENTS                                                  *cpp-devel-contents*
 
     1.Intro...................................|cpp-devel|
     2.Functionality provided..................|cpp-devel-Functionality|
-        2.1.Global commands...................|cpp-devel-GlobalCommands|
-        2.2 Local command.....................|cpp-devel-LocalCommands|
+        2.1 Global commands...................|cpp-devl-GlobalCommands|
+        2.2 Global functions..................|cpp-devel-GlobalFunctions|
+        2.3 Local functions...................|cpp-devel-LocalFunctions|
 
 ==============================================================================
 1. Intro                                                           *cpp-devel*
@@ -38,25 +39,65 @@ o  Generic tab completion for braces, parenthesis and quotes.
 o  Ability to align assignments in surrounding statements.
 
 ===-----------------------------------X------------------------------------===
-2.1. Global Commands                                *cpp-devel-GlobalCommands*
+2.1  Global Commands                                *cpp-devel-GlobalCommands*
+:make                                                                   *make*
+
+
+===-----------------------------------X------------------------------------===
+2.2  Global Functions                              *cpp-devel-GlobalFunctions*
 
 ------------------------------------------------------------------------------
-:DisableSmartLineBreak()                               *DisableSmartLineBreak*
+SetCppCodingStyle()                                           *SetCodingStyle*
+        This procedure enables settings based on the syntax settings
+        for the current file.
+
+------------------------------------------------------------------------------
+DisableSmartLineBreak()                                *DisableSmartLineBreak*
 
 See also
 
 ------------------------------------------------------------------------------
-:EnableSmartLineBreak()                                 *EnableSmartLineBreak*
+EnableSmartLineBreak()                                  *EnableSmartLineBreak*
 
 See also
 
 ------------------------------------------------------------------------------
-:SmartParensOff()                                             *SmartParensOff*
+SmartElse()                                                        *SmartElse*
 
 See also
 
 ------------------------------------------------------------------------------
-:AddHeader()                                                      *:AddHeader*
+AddClosingBrace(current_line)                                *AddClosingBrace*
+
+See also
+
+------------------------------------------------------------------------------
+AddClosingChar(current_line, ch)                              *AddClosingChar*
+
+See also
+
+------------------------------------------------------------------------------
+SmartLineBreak()                                              *SmartLineBreak*
+
+See also
+
+------------------------------------------------------------------------------
+SmartParensOn()                                                *SmartParensOn*
+
+See also
+
+------------------------------------------------------------------------------
+SmartParensOff()                                              *SmartParensOff*
+
+See also
+
+------------------------------------------------------------------------------
+SmartTab()                                                         *SmartTabs*
+
+See also
+
+------------------------------------------------------------------------------
+AddHeader()                                                       *:AddHeader*
         Insert an #include statement for the current/last symbol.
 
         Example:
@@ -72,7 +113,7 @@ See also
 See also
 
 ------------------------------------------------------------------------------
-:AddForward()                                                    *:AddForward*
+AddForward()                                                     *:AddForward*
         This fuction will add a forward decl for the class the current
         currser is on.
 
@@ -83,7 +124,7 @@ See also
 
 
 ------------------------------------------------------------------------------
-:SwitchHeaderImp()                                          *:SwitchHeaderImp*
+SwitchHeaderImp()                                           *:SwitchHeaderImp*
         Switch between a header and implementation file.
 
         To remap: >
@@ -93,7 +134,7 @@ See also
 
 
 ------------------------------------------------------------------------------
-:SwitchPrivateHeaderImpl()                          *:SwitchPrivateHeaderImpl*
+SwitchPrivateHeaderImpl()                           *:SwitchPrivateHeaderImpl*
         Switch between a private header and implementation file.
 
         To remap: >
@@ -103,7 +144,7 @@ See also
 
 
 ------------------------------------------------------------------------------
-:IncludeGuard()                                                *:IncludeGuard*
+IncludeGuard()                                                 *:IncludeGuard*
         Adds a forward declaration.
 
         To remap: >
@@ -113,17 +154,18 @@ See also
 
 
 ------------------------------------------------------------------------------
-:SmartInclude()                                                 *SmartInclude*
+SmartInclude()                                                  *SmartInclude*
         Expand #i to #include <.h> or #include ".h". The latter is
         chosen if the character typed after #i is a dquote If the
         character is > #include <> is inserted (standard C++ headers
         w/o .h)
 
-:Licenseeader( license )                                      *LicenseHeader*
+------------------------------------------------------------------------------
+LicensHeader( license )                                        *LicenseHeader*
 
 
 ------------------------------------------------------------------------------
-:CreateChangeLogEntry()                                 *CreateChangeLogEntry*
+CreateChangeLogEntry()                                  *CreateChangeLogEntry*
         Create a changelog entry. This function will split-open the
         changelog file and start an entry for you.
 
@@ -131,7 +173,7 @@ See also *CreateTODOEntry*
 
 
 ------------------------------------------------------------------------------
-:CreateTODOEntry()                                          *CreateTODOEntry*
+CreateTODOEntry()                                            *CreateTODOEntry*
         Create a TODO entry. This function will split-open the
         TODO file and start an entry for you.
 
@@ -139,7 +181,7 @@ See also *CreateChangeLogEntry*
 
 
 ------------------------------------------------------------------------------
-:AlignAssignments()                                        *AlightAssignments*
+AlignAssignments()                                         *AlightAssignments*
 
         This function will align the assignments for the statements in
         a code block.
@@ -163,7 +205,7 @@ See also
 
 
 ------------------------------------------------------------------------------
-:CommentLine()                                                   *CommentLine*
+CommentLine()                                                    *CommentLine*
         Adds or removes a comment on lines (works with visual
         selection).
 
@@ -199,18 +241,9 @@ CommentBlock()                                                  *CommentBlock*
 See also
 
 ===-----------------------------------X------------------------------------===
-2.2. Local Commands                                  *cpp-devel-LocalCommands*
+2.2. Local Functions                                  *cpp-devel-LocalFunctions*
 
-SetCppCodingStyle()                                           *SetCodingStyle*
-        This procedure enables settings based on the syntax settings
-        for the current file.
-
-SmartElse()                                                        *SmartElse*
 CreateMatchLine()                                            *CreateMatchLine*
-AddClosingBrace(current_line)                                *AddClosingBrace*
-SmartLineBreak()                                              *SmartLineBreak*
-SmartParensOn()                                                *SmartParensOn*
-SmartTab()                                                         *SmartTabs*
 SmartParens( char, ... )                                         *SmartParens*
 SpaceBetweenKeywordAndParens()                  *SpaceBetweenKeywordAndParens*
         This function will add a space after the paren for the
