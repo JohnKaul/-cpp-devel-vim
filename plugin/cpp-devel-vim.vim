@@ -282,6 +282,7 @@ endfunction     "}}}
 
 " --------------------------------------------------------------------
 " DisableSmartLineBreak()
+" Disables insert mode mapping.
 " --------------------------------------------------------------------
 function! DisableSmartLineBreak()                       "{{{
     iunmap <CR>
@@ -290,6 +291,7 @@ endfunction "}}}
 
 " --------------------------------------------------------------------
 " EnableSmartLineBreak()
+" Sets an insert mode mapping to call the function SmartLineBreak() 
 " --------------------------------------------------------------------
 function! EnableSmartLineBreak()                        "{{{
     if exists("*pumvisible")
@@ -302,6 +304,7 @@ endfunction "}}}
 
 " --------------------------------------------------------------------
 " SmartElse()
+" Adds an else on the same line as a bracket.
 " --------------------------------------------------------------------
 function! SmartElse()                                   "{{{
     let prefix = ''
@@ -319,6 +322,7 @@ endfunction "}}}
 
 " --------------------------------------------------------------------
 " s:CreateMatchLine()
+" Finds the line in wich to place the matching brace/paren/bracket.
 " --------------------------------------------------------------------
 function! s:CreateMatchLine()                           "{{{
     let linenum = line( '.' )
@@ -410,6 +414,7 @@ endfunction "}}}
 
 " --------------------------------------------------------------------
 " SmartLinebreak()
+" Add the closing brace/parent/bracket.
 " --------------------------------------------------------------------
 function! SmartLineBreak()                              "{{{
     if synIDattr(synID(line("."), col("."), 1), "name") == 'cComment' "inside a /* */ comment at the point where the line break occurs
