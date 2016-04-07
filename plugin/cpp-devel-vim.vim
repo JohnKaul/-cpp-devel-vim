@@ -262,9 +262,9 @@ function! s:NormalMappings()                            "{{{
     nmap ,# :call IncludeGuard()<CR>
 
     " Insert license headers at the top of the file
-    "" nmap ,lg :call LicenseHeader( "GPL" )<CR>
-    "" nmap ,ll :call LicenseHeader( "LGPL" )<CR>
-    "" nmap ,lm :call LicenseHeader( "MIT" )<CR>
+    nmap ,lg :call LicenseHeader( "GPL" )<CR>
+    nmap ,ll :call LicenseHeader( "LGPL" )<CR>
+    nmap ,lm :call LicenseHeader( "MIT" )<CR>
     nmap ,lb :call LicenseHeader( "BSD" )<CR>
 
     " Call AlignAssignments() for the current block of code.
