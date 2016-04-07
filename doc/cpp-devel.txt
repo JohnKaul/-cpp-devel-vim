@@ -20,18 +20,19 @@ CONTENTS                                                  *cpp-devel-contents*
 ===-----------------------------------X------------------------------------===
 1. Intro                                                           *cpp-devel*
 
-This plugin will help preform many useful functions to help write C/C++ code.
+This plugin will help preform many useful functions to help write
+C/C++ code.
 
 The main goal of this plugin was to offer me a painless method to keep
-a tags file up-to-date and give me the ability to use the built in
-|:make| command to build my "out-of-source-build projects". This
-plugin looks for a "build" directory and assumes that it is at the
-project root. 
+a projects tags file up-to-date and give me the ability to use the
+built in |:make| command to build my "out-of-source-build projects".
+This plugin looks for a "build" directory and assumes that it is at
+the project root.
 
-Indent style is big and usually very personal topic and, this plugin
+Indent style is big, and usually very personal, topic and this plugin
 does offer to help enforce some basic rules related to style. However,
 coding style isn't this plugins main goal (it is offered as an added
-feature) so it can be turned off.
+feature) so it can be turned off or tailored to suite your needs.
 
 By defauly this plugin helps write code that is mostly K&R style code
 (think: braces on the same line) and with very little effort it can be
