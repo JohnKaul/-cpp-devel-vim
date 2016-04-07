@@ -84,10 +84,14 @@ o  Ability to align assignments in surrounding statements.
 
 2.1.3   Normal mode mappings                                    *cpp-devel-map*
 
-        Gf...................................................|SwitchHeaderImpl|
-        GF............................................|SwitchPrivateHeaderImpl|
+        ,h...................................................|SwitchHeaderImpl|
+        ,p............................................|SwitchPrivateHeaderImpl|
         ,#.......................................................|IncludeGuard|
         ;=...................................................|AlignAssignments|
+        ,lg.....................................................|LicenseHeader|
+        ,ll.....................................................|LicenseHeader|
+        ,lm.....................................................|LicenseHeader|
+        ,lb.....................................................|LicenseHeader|
 
 
 
@@ -272,6 +276,10 @@ SmartInclude()                                                  *SmartInclude*
 
 ------------------------------------------------------------------------------
 LicensHeader( license )                                        *LicenseHeader*
+
+To make use of the ,ll ,lg, ,lm, and ,lb shortcuts you need to have
+the files GPLHEADER, LGPLHEADER, MITHEADER, and BSDHEADER in your home
+directory. Their content will be copied as license header then.
 
 ------------------------------------------------------------------------------
 CreateChangeLogEntry()                                  *CreateChangeLogEntry*
