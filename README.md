@@ -1,7 +1,17 @@
+###*Current Version: 1.0.0*###
 # README #
-This Vim script _(adopted from `kde-devel-vim`)_ will become a more generic C++ helper script _(not so KDE/Qt specific)_. I want to give full credit to the original authors so I will add a header in the script file with a link to the original. I also don't want to clutter the file with commented out code/lines so I will be deleting them as they become unnecessary or replaced.
+I created this Vimscript _(adopted from `kde-devel-vim`)_ for myself to be a more generic C++ helper script _(not so KDE/Qt specific)_. I want to give full credit to the original authors so I added a header in the script file with the original writeup and a link to the location where I found it.
 
-## Functionality provided ##
+My main goals for this script when I started modifying the original were to add:
+
+1. Maintenance free `makeprog` setup which supported "out-of-source-builds".
+
+2. Maintenance free `tagfile` creation.
+
+3. Help me stay consistent with my indent/coding style (K&R-ish). *The original had some formatting helpers and this was a big shortcut for me*
+
+
+## Functionality provided by this script ##
 *  Automatic brace and parenthesis addition. _Intelligence added to place braces on same line as `if`,`while`,`do`,etc._
 *  Automatic space between keyword and paren addition.
 *  Quick switching between header and impl file.
@@ -27,7 +37,8 @@ If you don't have a preferred installation method, I recommend installing [patho
     git clone https://JohnKaul@bitbucket.org/JohnKaul/cpp-devel-vim.git
     vim -u NONE -c "helptags cpp-devel-vim/doc" -c q
 
-Otherwise you can always download this and place the `cpp-devel-vim.vim` file in the `plugin` directory. 
+Otherwise you can always download [version 1.0.0](https://bitbucket.org/JohnKaul/cpp-devel-vim/downloads/cpp-devel-vim_v1.0.0.tar.gz) and extract it manually (FYI: the `cpp-devel-vim.vim` file is supposed to be in your vim `plugin` directory).
+
 
 ### Contribution guidelines ###
 * Contribute? Please. Feel free. My current needs are documentation, code checking and testing.
