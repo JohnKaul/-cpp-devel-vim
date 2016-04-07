@@ -268,7 +268,7 @@ function! s:NormalMappings()                            "{{{
     nmap ,lb :call LicenseHeader( "BSD" )<CR>
 
     " Call AlignAssignments() for the current block of code.
-    nmap <silent>  ;=  :call AlignAssignments()<CR>
+    nmap <silent>  ,=  :call AlignAssignments()<CR>
     nmap make :call Make()<CR>
 endfunction     "}}}
 

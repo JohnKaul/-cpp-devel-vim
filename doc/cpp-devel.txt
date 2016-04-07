@@ -32,37 +32,36 @@ the project root.
 Indent style is big, and usually very personal, topic and this plugin
 does offer to help enforce some basic rules related to style. However,
 coding style isn't this plugins main goal (it is offered as an added
-feature) so it can be turned off or tailored to suite your needs.
+feature) so it can be commented out and/or turned off or tailored to
+suite your needs.
 
-By defauly this plugin helps write code that is mostly K&R style code
-(think: braces on the same line) and with very little effort it can be
-made to conform to a different style. There are many, many different
-indent styles--K&R, BSD, Allman, etc--and many different style guides
-and this plugin certainly isn't intended to replace those and it
-certainly will not reformat existing code so, if you do not already
-have a preferred coding style, I hope the style aspect of this plugin
-helps you. 
+By default this plugin helps write code that is mostly K&R style code
+and with very little effort it can be made to conform to a different
+style. There are many, many different indent styles--K&R, BSD, Allman,
+etc--and many different style guides and this plugin certainly isn't
+intended to replace those and it certainly will not reformat existing
+code so, if you do not already have a preferred coding style, I hope
+the style aspect of this plugin helps you. 
 
 
 
 ===-----------------------------------X------------------------------------===
 2. Functionality provided                            *cpp-devel-Functionality*
 
+o  Intelligent directory searching to enable "out-of-source-building", like
+   in the use of CMAKE.
+o  Quick switching between header and impl file.
 o  Automatic brace and parenthesis addition.
       ~ Intelligence added to place braces on same line as if,while,do,etc.
 o  Automatic space between keyword and paren addition.
       ~ For the keywords: if/for/while/switch/foreach/forever add a space
         between it and it's paren
-o  Quick switching between header and impl file.
 o  Intelligent includes additions.
       ~ EG: Automatic "#include <string.h>" statement when cursor is on
             "std::string" statement.
-o  Ability to add "standard" comment headers.
 o  Changelog and TODO log entry helpers.
 o  Comment and Uncomment line(s) toggle
-      ~ works with visual selection as well.
-o  Intelligent directory searching to enable "out-of-source-building", like
-   in the use of CMAKE.
+      ~ Works with visual selection as well.
 o  Generic tab completion for braces, parenthesis and quotes.
       ~ This feature is only meant for convinces, please use a mechanism
         like "SnipMate" for better tab completion.
@@ -87,7 +86,7 @@ o  Ability to align assignments in surrounding statements.
         ,h...................................................|SwitchHeaderImpl|
         ,p............................................|SwitchPrivateHeaderImpl|
         ,#.......................................................|IncludeGuard|
-        ;=...................................................|AlignAssignments|
+        ,=...................................................|AlignAssignments|
         ,lg.....................................................|LicenseHeader|
         ,ll.....................................................|LicenseHeader|
         ,lm.....................................................|LicenseHeader|
