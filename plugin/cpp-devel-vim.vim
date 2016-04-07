@@ -183,6 +183,7 @@ function! SetCppCodingStyle()                           "{{{
 
     let g:need_brace_on_next_line = '\<\(class\|namespace\|struct\)\>'
     let g:need_brace_on_same_line = '\<\(if\|else\|while\|switch\|do\|foreach\|forever\|enum\|for\|try\|catch\)\>'
+
     set sw=4
     set sts=4
     set et
@@ -1048,7 +1049,7 @@ function! s:MapIdentHeader( ident )                     "{{{
         return '<debug.h>'
 
     " Standard Library stuff
-    elseif a:ident =~ '\(std::\)\?\(cout\|cerr\|endl\|fstream\)'
+    elseif a:ident =~ '\(std::\)\?\(cout\|cerr\|endl\|iostream\|fstream\)'
         return '<iostream>'
     elseif a:ident =~ '\(std::\)\?\(string\)'
         return '<string.h>'
