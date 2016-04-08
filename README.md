@@ -34,7 +34,7 @@ My main goals for this script when I started modifying the original were to add:
 If you don't have a preferred installation method, I recommend installing [pathogen.vim](https://github.com/tpope/vim-pathogen), and then simply copy and paste:
 
     cd ~/.vim/bundle
-    git clone https://JohnKaul@bitbucket.org/JohnKaul/cpp-devel-vim.git
+    git clone https://bitbucket.org/JohnKaul/cpp-devel-vim.git
     vim -u NONE -c "helptags cpp-devel-vim/doc" -c q
 
 Otherwise you can always download [version 1.0.0](https://bitbucket.org/JohnKaul/cpp-devel-vim/downloads/cpp-devel-vim_v1.0.0.tar.gz) and extract it manually (FYI: the `cpp-devel-vim.vim` file is supposed to be in your vim `plugin` directory).
